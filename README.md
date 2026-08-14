@@ -31,7 +31,15 @@ one-command install / rollback / verify scripts.
 10. **Recycle-bin styling**: a workspace-level group row (trash icon, bold
     brand-blue title, expanded by default, click to collapse, items aligned
     with the title).
-11. **Fixes**: recycle-bin RPC envelope unwrap bug, server default cwd being a
+11. **File preview panel**: clicking a **file** in the sidebar folder tree slides
+    a 520px panel in from the right — a header with the file name and full path,
+    and a body rendered with the same **Markdown renderer** used for chat
+    messages: `.md` files render as Markdown (headings / lists / code blocks /
+    tables / links); 30+ code extensions (`.js/.ts/.vue/.json/.java/.py/.xml/
+    .yml/.css/.html`…) are wrapped in syntax-highlighted code blocks. Content
+    comes from the new `host.readFile` RPC (workspace-root-bounded, ≤256KB,
+    binary files refused).
+12. **Fixes**: recycle-bin RPC envelope unwrap bug, server default cwd being a
     drive root (`C:\`) which broke ungrouped session creation, and more.
 
 ## Installation
