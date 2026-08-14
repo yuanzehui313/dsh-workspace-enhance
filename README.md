@@ -53,6 +53,37 @@ powershell -ExecutionPolicy Bypass -File "...\scripts\verify.ps1"    # 检查补
 powershell -ExecutionPolicy Bypass -File "...\scripts\uninstall.ps1" # 从最近一次备份回滚
 ```
 
+## 终端（TUI）适配
+
+配合 [`@dsh-tui/dsh-tui`](https://github.com/openguardrails/dsh-tui)（Claude Code 风格终端界面）使用：
+
+```powershell
+# 1. 安装 TUI 插件到独立 profile（需 Node ^22.19 || >=24，且已安装 pnpm）
+dsh plugin --profile tui add @dsh-tui/dsh-tui
+
+# 2. 安装本插件（声明了 dsh.bundle 层，会自动加入 profile 组合）
+dsh plugin --profile tui add github:yuanzehui313/dsh-workspace-enhance
+
+# 3. TUI profile 的宿主包从 dsh CLI 安装目录解析，overlay 需指向那里
+powershell -ExecutionPolicy Bypass -File "...\scripts\install.ps1" -TargetRoot "C:\...\node_modules\@deepseek-ai"
+
+# 4. 启动（需要真实终端）
+dsh --profile tui
+```
+
+终端下可用斜杠命令（宿主侧注册，Web 界面同样可调用）：
+
+| 命令 | 作用 |
+|---|---|
+| `/trash` | 列出回收站中的会话与工作区 |
+| `/trash-restore <id>` | 恢复回收站条目 |
+| `/trash-purge <id>` | 彻底删除回收站条目 |
+| `/move <sessionId> <workspaceId \| ungrouped>` | 把会话移动到其他工作区（或移出为未分组） |
+| `/preview <path>` | 预览工作区内的文件（Markdown 渲染，代码文件自动高亮） |
+
+说明：Web 侧的侧边栏 UI（回收站分组、拖动、预览面板等）仅存在于 Web 界面；TUI 通过
+上述命令驱动同一套宿主能力（回收站 / 跨工作区移动 / 文件读取共用同一份持久化状态）。
+
 ## 目录结构
 
 ```

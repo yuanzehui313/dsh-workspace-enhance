@@ -65,6 +65,40 @@ powershell -ExecutionPolicy Bypass -File "...\scripts\verify.ps1"    # check pat
 powershell -ExecutionPolicy Bypass -File "...\scripts\uninstall.ps1" # restore the latest backup
 ```
 
+## Terminal (TUI) adaptation
+
+Works with [`@dsh-tui/dsh-tui`](https://github.com/openguardrails/dsh-tui), the
+Claude Code-style terminal front door:
+
+```powershell
+# 1. Install the TUI into its own profile (needs Node ^22.19 || >=24 and pnpm)
+dsh plugin --profile tui add @dsh-tui/dsh-tui
+
+# 2. Install this plugin (declares a dsh.bundle layer, so it joins the profile composition)
+dsh plugin --profile tui add github:yuanzehui313/dsh-workspace-enhance
+
+# 3. The tui profile resolves host packages from the dsh CLI install — point the overlay there
+powershell -ExecutionPolicy Bypass -File "...\scripts\install.ps1" -TargetRoot "C:\...\node_modules\@deepseek-ai"
+
+# 4. Launch (requires a real terminal)
+dsh --profile tui
+```
+
+Slash commands available in the terminal (host-registered; the web surface can
+use them too):
+
+| Command | Purpose |
+|---|---|
+| `/trash` | list recycle-bin sessions and workspaces |
+| `/trash-restore <id>` | restore a recycle-bin entry |
+| `/trash-purge <id>` | permanently delete a recycle-bin entry |
+| `/move <sessionId> <workspaceId \| ungrouped>` | move a session to another workspace (or ungroup it) |
+| `/preview <path>` | preview a workspace file (Markdown rendering, code files highlighted) |
+
+The web sidebar UI (recycle-bin group, drag-and-drop, preview panel) is web-only;
+the TUI drives the same host capabilities through these commands and shares the
+same durable state.
+
 ## Layout
 
 ```
