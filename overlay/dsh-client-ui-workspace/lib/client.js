@@ -1417,49 +1417,59 @@ window.__ModuleLoader__.load({
 				}, "f-" + entry.path))
 			});
 		}
-		/** Right-side file preview panel: fixed overlay showing one workspace file's text. */
+		/** Right-side file preview panel: fixed overlay showing one workspace file as rendered markdown (code files as fenced blocks). */
 		function FilePreviewPanel({ preview, onClose, t }) {
+			const fileName = preview.path.split(/[\\/]/).pop() || preview.path;
+			const dot = fileName.lastIndexOf(".");
+			const ext = dot > 0 ? fileName.slice(dot + 1).toLowerCase() : "";
+			const isMarkdown = ext === "md" || ext === "markdown";
+			const codeLangs = new Set(["js", "jsx", "ts", "tsx", "json", "vue", "java", "xml", "yml", "yaml", "py", "go", "rs", "c", "cpp", "h", "hpp", "css", "scss", "less", "html", "htm", "sh", "ps1", "bat", "cmd", "sql", "toml", "ini", "conf", "properties", "gradle"]);
+			const bodyText = preview.phase !== "ready" || isMarkdown || !codeLangs.has(ext) ? preview.content : "```" + ext + "\n" + preview.content + "\n```";
 			const body = preview.phase === "loading" ? (0, react_jsx_runtime.jsx)("div", {
 				className: WorkspacePicker_module_css_default.menuStatus,
 				style: {
-					padding: 12
+					padding: 16
 				},
 				children: t("preview.busy")
 			}) : preview.phase === "error" ? (0, react_jsx_runtime.jsx)("div", {
 				className: WorkspacePicker_module_css_default.modalError,
 				style: {
-					padding: 12
+					padding: 16
 				},
 				role: "alert",
 				children: preview.error
-			}) : (0, react_jsx_runtime.jsx)("pre", {
+			}) : preview.content === "" ? (0, react_jsx_runtime.jsx)("div", {
+				className: WorkspacePicker_module_css_default.menuStatus,
+				style: {
+					padding: 16
+				},
+				children: t("preview.empty")
+			}) : (0, react_jsx_runtime.jsx)("div", {
 				style: {
 					flex: 1,
-					margin: 0,
-					padding: "12px 16px",
+					minHeight: 0,
 					overflow: "auto",
-					fontFamily: "ui-monospace, SFMono-Regular, Consolas, 'Courier New', monospace",
-					fontSize: 12,
-					lineHeight: "18px",
-					color: "var(--dsw-alias-label-primary)",
-					whiteSpace: "pre-wrap",
-					wordBreak: "break-word"
+					padding: "8px 16px 24px"
 				},
-				children: preview.content === "" ? t("preview.empty") : preview.content
+				children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.MarkdownText, {
+					text: bodyText
+				})
 			});
 			return (0, react_jsx_runtime.jsxs)("div", {
 				style: {
 					position: "fixed",
 					top: 0,
 					right: 0,
-					width: 480,
-					maxWidth: "80vw",
+					width: 520,
+					maxWidth: "85vw",
 					height: "100vh",
 					display: "flex",
 					flexDirection: "column",
 					background: "var(--dsw-alias-bg-module-platform)",
 					borderLeft: "1px solid var(--dsw-alias-border-l2)",
-					boxShadow: "-8px 0 24px rgba(0,0,0,.2)",
+					borderRadius: "12px 0 0 12px",
+					overflow: "hidden",
+					boxShadow: "-12px 0 32px rgba(0,0,0,.25)",
 					zIndex: 1000
 				},
 				children: [
@@ -1469,23 +1479,46 @@ window.__ModuleLoader__.load({
 							display: "flex",
 							alignItems: "center",
 							gap: 8,
-							padding: "10px 12px",
-							borderBottom: "1px solid var(--dsw-alias-border-l2)"
+							padding: "12px 14px 10px",
+							borderBottom: "1px solid var(--dsw-alias-border-l2)",
+							background: "var(--dsw-alias-bg-layer-1)"
 						},
 						children: [
-							(0, react_jsx_runtime.jsx)("span", {
+							(0, react_jsx_runtime.jsxs)("div", {
 								style: {
 									flex: 1,
 									minWidth: 0,
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									whiteSpace: "nowrap",
-									fontSize: 12,
-									color: "var(--dsw-alias-label-secondary)",
-									fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace"
+									display: "flex",
+									flexDirection: "column",
+									gap: 3
 								},
-								title: preview.path,
-								children: preview.path
+								children: [
+									(0, react_jsx_runtime.jsx)("span", {
+										style: {
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											whiteSpace: "nowrap",
+											fontSize: 14,
+											fontWeight: 600,
+											lineHeight: "20px",
+											color: "var(--dsw-alias-label-primary)"
+										},
+										children: fileName
+									}),
+									(0, react_jsx_runtime.jsx)("span", {
+										title: preview.path,
+										style: {
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											whiteSpace: "nowrap",
+											fontSize: 11,
+											lineHeight: "16px",
+											color: "var(--dsw-alias-label-secondary)",
+											fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace"
+										},
+										children: preview.path
+									})
+								]
 							}),
 							(0, react_jsx_runtime.jsx)("button", {
 								type: "button",
