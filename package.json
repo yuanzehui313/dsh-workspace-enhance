@@ -1,0 +1,50 @@
+{
+  "name": "dsh-workspace-enhance",
+  "description": "DeepSeek Harness workspace & session enhancement plugin: recycle bin, cross-workspace session drag, ungrouped sessions, multi-folder workspace roots, in-app directory picker, session merge — shipped as an overlay patch-set with install scripts",
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/13545870036/dsh-workspace-enhance.git"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "overlay/**/*",
+    "scripts/*.ps1",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "deepseek",
+    "dsh",
+    "dsh-plugin",
+    "workspace",
+    "recycle-bin",
+    "session"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  }
+}
