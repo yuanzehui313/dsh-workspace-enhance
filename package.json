@@ -32,7 +32,7 @@
     "overlay/**/*",
     "scripts/*.ps1",
     "README.md",
-    "README.zh.md",
+    "README.en.md",
     "LICENSE"
   ],
   "license": "MIT",
