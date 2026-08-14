@@ -10183,6 +10183,18 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				return response.result.value;
 			}
 			/**
+			* Read one text file's content through the Host for the file-preview
+			* panel (workspace-root-bounded; binary and oversized files are
+			* reported by the Host as errors).
+			* @param path - absolute file path under a workspace root.
+			* @returns the read result { path, size, binary, content, truncated }.
+			*/
+			async readFile(path) {
+				const response = await this.api.host.readFile({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/**
 			* Create one child directory through the Host's `browse` capability.
 			* @param path - absolute existing parent directory.
 			* @param name - single non-blank path segment.

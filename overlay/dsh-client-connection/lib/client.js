@@ -5779,6 +5779,18 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		object({ path: string().min(1) });
 		/** host.openPath response value. */
 		const hostOpenPathValueSchema = object({ opened: literal(true) });
+		object({
+			path: string().min(1),
+			maxBytes: number().int().positive().optional()
+		});
+		/** host.readFile response value. */
+		const hostReadFileValueSchema = object({
+			path: string(),
+			size: number(),
+			binary: boolean(),
+			content: string(),
+			truncated: boolean()
+		});
 		//#endregion
 		//#region ../../host/apiproxy/lib/types/api/skills.schema.js
 		/**
@@ -6133,6 +6145,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			"host.listDirectory": hostListDirectoryValueSchema,
 			"host.createDirectory": hostCreateDirectoryValueSchema,
 			"host.openPath": hostOpenPathValueSchema,
+			"host.readFile": hostReadFileValueSchema,
 			"workspace.list": workspaceListValueSchema,
 			"workspace.create": workspaceCreateValueSchema,
 			"workspace.setAdditionalPaths": workspaceSetAdditionalPathsValueSchema,
@@ -6358,7 +6371,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				pickDirectory: (payload, signal) => this.callUnary("host.pickDirectory", payload, signal, "caller-signal-only"),
 				listDirectory: (payload, signal) => this.callUnary("host.listDirectory", payload, signal),
 				createDirectory: (payload, signal) => this.callUnary("host.createDirectory", payload, signal),
-				openPath: (payload, signal) => this.callUnary("host.openPath", payload, signal)
+				openPath: (payload, signal) => this.callUnary("host.openPath", payload, signal),
+				readFile: (payload, signal) => this.callUnary("host.readFile", payload, signal)
 			};
 			workspace = {
 				list: (payload, signal) => this.callUnary("workspace.list", payload, signal),

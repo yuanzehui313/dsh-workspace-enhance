@@ -1,8 +1,8 @@
 import { Service } from "@deepseek-ai/cordis";
 import z from "@deepseek-ai/schemastery";
 import { randomUUID } from "node:crypto";
-import { mkdir, stat } from "node:fs/promises";
-import { dirname, extname, parse } from "node:path";
+import { mkdir, readFile, stat } from "node:fs/promises";
+import { dirname, extname, parse, resolve, sep } from "node:path";
 import { installModelSelection } from "@deepseek-ai/dsh-agent";
 import { AttachmentError } from "@deepseek-ai/dsh-attachment";
 import { ReasoningEffortId, contentHasImage, createUserMessage, errorChain, freezeMessage } from "@deepseek-ai/dsh-llm";
@@ -3567,6 +3567,54 @@ function createApiProxy(ctx, defaults) {
 			},
 			async openPath(request, signal) {
 				return openPath(request, request.payload.path, signal);
+			},
+			async readFile(request) {
+				const maxBytes = request.payload.maxBytes ?? 262144;
+				try {
+					const canonical = resolve(request.payload.path);
+					const allowed = ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
+						const lower = process.platform === "win32" ? (value) => value.toLowerCase() : (value) => value;
+						const lr = lower(resolve(root));
+						const lt = lower(canonical);
+						return lt === lr || lt.startsWith(lr.endsWith(sep) ? lr : lr + sep);
+					}));
+					if (!allowed) return err(request, {
+						code: "internal",
+						message: `cannot preview "${request.payload.path}": the path is outside every workspace root`,
+						details: {}
+					});
+					const info = await stat(canonical);
+					if (!info.isFile()) return err(request, {
+						code: "internal",
+						message: `cannot preview "${request.payload.path}": not a regular file`,
+						details: {}
+					});
+					if (info.size > maxBytes) return err(request, {
+						code: "internal",
+						message: `cannot preview "${request.payload.path}": file is ${info.size} bytes (limit ${maxBytes} bytes)`,
+						details: {}
+					});
+					const buffer = await readFile(canonical);
+					const probe = buffer.subarray(0, Math.min(8192, buffer.length));
+					let binary = false;
+					for (const byte of probe) if (byte === 0) {
+						binary = true;
+						break;
+					}
+					return ok(request, {
+						path: canonical,
+						size: info.size,
+						binary,
+						content: binary ? "" : buffer.toString("utf8"),
+						truncated: false
+					});
+				} catch (error) {
+					return err(request, {
+						code: "internal",
+						message: `cannot read "${request.payload.path}": ${error instanceof Error ? error.message : String(error)}`,
+						details: {}
+					});
+				}
 			}
 		},
 		goals: {
@@ -4562,6 +4610,11 @@ const hostCreateDirectoryValueSchema = z$1.object({ path: z$1.string() });
 const hostOpenPathRequestSchema = z$1.object({ path: z$1.string().min(1) });
 /** host.openPath response value. */
 const hostOpenPathValueSchema = z$1.object({ opened: z$1.literal(true) });
+/** host.readFile request payload (default maxBytes: 262144). */
+const hostReadFileRequestSchema = z$1.object({
+	path: z$1.string().min(1),
+	maxBytes: z$1.number().int().positive().optional()
+});
 //#endregion
 //#region lib/types/api/workspace.schema.js
 /**
@@ -5115,6 +5168,10 @@ const UNARY_ROUTES = {
 	"host.openPath": {
 		schema: hostOpenPathRequestSchema,
 		invoke: (api, r, signal) => api.host.openPath(r, signal)
+	},
+	"host.readFile": {
+		schema: hostReadFileRequestSchema,
+		invoke: (api, r) => api.host.readFile(r)
 	},
 	"workspace.list": {
 		schema: workspaceListRequestSchema,

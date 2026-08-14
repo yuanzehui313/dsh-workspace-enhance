@@ -1295,7 +1295,7 @@ window.__ModuleLoader__.load({
 			return e.clientY < rect.top + rect.height / 2 ? "before" : "after";
 		}
 		/** Lazily listed directory subtree under one expanded folder row (recursive). */
-		function RootTree({ path, listDirectory, depth, t }) {
+		function RootTree({ path, listDirectory, onOpenFile, depth, t }) {
 			const [state, setState] = (0, react.useState)({
 				phase: "loading",
 				listing: null,
@@ -1390,6 +1390,7 @@ window.__ModuleLoader__.load({
 						open.has(entry.path) && (0, react_jsx_runtime.jsx)(RootTree, {
 							path: entry.path,
 							listDirectory,
+							onOpenFile,
 							depth: depth + 1,
 							t
 						}, "t-" + entry.path)
@@ -1400,6 +1401,9 @@ window.__ModuleLoader__.load({
 						paddingLeft: pad + 16
 					},
 					title: entry.path,
+					onClick: () => {
+						onOpenFile(entry.path);
+					},
 					children: [
 						(0, react_jsx_runtime.jsx)("span", {
 							className: Rows_module_css_default.slot,
@@ -1413,8 +1417,92 @@ window.__ModuleLoader__.load({
 				}, "f-" + entry.path))
 			});
 		}
+		/** Right-side file preview panel: fixed overlay showing one workspace file's text. */
+		function FilePreviewPanel({ preview, onClose, t }) {
+			const body = preview.phase === "loading" ? (0, react_jsx_runtime.jsx)("div", {
+				className: WorkspacePicker_module_css_default.menuStatus,
+				style: {
+					padding: 12
+				},
+				children: t("preview.busy")
+			}) : preview.phase === "error" ? (0, react_jsx_runtime.jsx)("div", {
+				className: WorkspacePicker_module_css_default.modalError,
+				style: {
+					padding: 12
+				},
+				role: "alert",
+				children: preview.error
+			}) : (0, react_jsx_runtime.jsx)("pre", {
+				style: {
+					flex: 1,
+					margin: 0,
+					padding: "12px 16px",
+					overflow: "auto",
+					fontFamily: "ui-monospace, SFMono-Regular, Consolas, 'Courier New', monospace",
+					fontSize: 12,
+					lineHeight: "18px",
+					color: "var(--dsw-alias-label-primary)",
+					whiteSpace: "pre-wrap",
+					wordBreak: "break-word"
+				},
+				children: preview.content === "" ? t("preview.empty") : preview.content
+			});
+			return (0, react_jsx_runtime.jsxs)("div", {
+				style: {
+					position: "fixed",
+					top: 0,
+					right: 0,
+					width: 480,
+					maxWidth: "80vw",
+					height: "100vh",
+					display: "flex",
+					flexDirection: "column",
+					background: "var(--dsw-alias-bg-module-platform)",
+					borderLeft: "1px solid var(--dsw-alias-border-l2)",
+					boxShadow: "-8px 0 24px rgba(0,0,0,.2)",
+					zIndex: 1000
+				},
+				children: [
+					(0, react_jsx_runtime.jsxs)("div", {
+						style: {
+							flex: "none",
+							display: "flex",
+							alignItems: "center",
+							gap: 8,
+							padding: "10px 12px",
+							borderBottom: "1px solid var(--dsw-alias-border-l2)"
+						},
+						children: [
+							(0, react_jsx_runtime.jsx)("span", {
+								style: {
+									flex: 1,
+									minWidth: 0,
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap",
+									fontSize: 12,
+									color: "var(--dsw-alias-label-secondary)",
+									fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace"
+								},
+								title: preview.path,
+								children: preview.path
+							}),
+							(0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								className: Rows_module_css_default.iconButton,
+								"aria-label": t("preview.close"),
+								title: t("preview.close"),
+								onClick: onClose,
+								children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, {})
+							})
+						]
+					}),
+					body
+				]
+			});
+		}
 		/** The scrolling session tree; unmounting drops the sessions subscription and expand-all state. */
-		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onRootReselect, onRootRemove, listDirectory, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
+		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, onOpenFile, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onRootReselect, onRootRemove, listDirectory, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
 			const list = useSessions((s) => s);
 			const current = list.current;
 			const [expandedSessionGroups, setExpandedSessionGroups] = (0, react.useState)([]);
@@ -1702,6 +1790,7 @@ window.__ModuleLoader__.load({
 											expandedRootPaths.includes(root.path) && (0, react_jsx_runtime.jsx)(RootTree, {
 												path: root.path,
 												listDirectory,
+								onOpenFile,
 												depth: 1,
 												t
 											}, "root-tree-" + root.path)
@@ -2134,7 +2223,7 @@ window.__ModuleLoader__.load({
 		* @param props - composed slot props (shell owner share + store + injected actions).
 		* @returns the region element tree.
 		*/
-		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, listDirectory, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
+		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, readFile, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, listDirectory, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
 			const sessionList = useSessions((state) => state);
 			const workspaces = useWorkspaces((state) => state.items);
 			const workspacePhase = useWorkspaces((state) => state.phase);
@@ -2199,6 +2288,35 @@ window.__ModuleLoader__.load({
 			const [mergeError, setMergeError] = (0, react.useState)(null);
 			const [mergeBarGroup, setMergeBarGroup] = (0, react.useState)(null);
 			const [trash, setTrash] = (0, react.useState)({ sessions: [], workspaces: [] });
+			const [filePreview, setFilePreview] = (0, react.useState)(null);
+			const openFilePreview = (path) => {
+				setFilePreview({
+					path,
+					phase: "loading",
+					content: "",
+					error: null
+				});
+				readFile(path).then((value) => {
+					setFilePreview((current) => current === null || current.path !== path ? current : {
+						path: value.path,
+						phase: "ready",
+						content: value.content,
+						binary: value.binary,
+						size: value.size,
+						error: null
+					});
+				}, (error) => {
+					setFilePreview((current) => current === null || current.path !== path ? current : {
+						path,
+						phase: "error",
+						content: "",
+						error: error instanceof Error ? error.message : String(error)
+					});
+				});
+			};
+			const closeFilePreview = () => {
+				setFilePreview(null);
+			};
 			const refreshTrash = (0, react.useCallback)(() => {
 				fetchTrash().then((payload) => {
 					setTrash({
@@ -2597,6 +2715,7 @@ window.__ModuleLoader__.load({
 							onSessionRename,
 							onSessionArchive,
 							startUngroupedSession,
+							onOpenFile: openFilePreview,
 							onMoveSession: (sessionId, workspaceId) => {
 								moveSession(sessionId, workspaceId).catch((error) => {
 									console.warn("session move rejected:", error);
@@ -2993,6 +3112,11 @@ window.__ModuleLoader__.load({
 							role: "alert",
 							children: sessionDeleteError
 						})]
+					}),
+					filePreview !== null && (0, react_jsx_runtime.jsx)(FilePreviewPanel, {
+						preview: filePreview,
+						onClose: closeFilePreview,
+						t
 					})
 				]
 			});
@@ -3089,7 +3213,11 @@ window.__ModuleLoader__.load({
 			"archive.restore": "恢复",
 			"trash.section": "回收站（{sessions} 个会话 · {workspaces} 个工作区）",
 			"trash.restore": "恢复",
-			"trash.purge": "彻底删除"
+			"trash.purge": "彻底删除",
+			"preview.close": "关闭预览",
+			"preview.busy": "正在读取…",
+			"preview.empty": "（空文件）",
+			"preview.binary": "二进制文件（无法预览）"
 		};
 		/** English dictionary, checked complete against the zh key set. */
 		const en = {
@@ -3176,7 +3304,11 @@ window.__ModuleLoader__.load({
 			"archive.restore": "Restore",
 			"trash.section": "Recycle bin ({sessions} sessions · {workspaces} workspaces)",
 			"trash.restore": "Restore",
-			"trash.purge": "Delete forever"
+			"trash.purge": "Delete forever",
+			"preview.close": "Close preview",
+			"preview.busy": "Reading…",
+			"preview.empty": "(empty file)",
+			"preview.binary": "Binary file (no preview)"
 		};
 		//#endregion
 		//#region lib/types/client/index.js
@@ -3254,6 +3386,7 @@ window.__ModuleLoader__.load({
 					await ctx.workspaces.setAdditionalPaths(workspaceId, additionalPaths);
 				},
 				listDirectory: (path, signal) => ctx.workspaces.listDirectory(path, signal, true),
+				readFile: (path) => ctx.workspaces.readFile(path),
 				mergeSessions: async (workspaceId, sessionIds) => {
 					return await ctx.sessions.merge({
 						workspaceId,
