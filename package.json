@@ -48,8 +48,5 @@
     "workspace",
     "recycle-bin",
     "session"
-  ],
-  "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1"
-  }
+  ]
 }
