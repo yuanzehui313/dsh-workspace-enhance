@@ -99,6 +99,18 @@ The web sidebar UI (recycle-bin group, drag-and-drop, preview panel) is web-only
 the TUI drives the same host capabilities through these commands and shares the
 same durable state.
 
+## Patch persistence
+
+- The overlay installs with delete-then-copy, **breaking hardlinks with the
+  official packages** — a DSH host relaunch through `npx -y @deepseek-ai/dsh web`
+  re-fetches official bundles without clobbering the patched files.
+- The web surface resolves plugins from the **profile's `node_modules\@deepseek-ai`**
+  (that is where the overlay lands).
+- For the TUI, prefer a pinned full dsh install (e.g.
+  `%USERPROFILE%\.dsh\dsh-pinned`, with the overlay applied there too) and launch
+  its `bin.js` with plain `node`, bypassing the npx cache refresh.
+- After upgrading DSH, re-check the overlay (`verify.ps1` reports REVERTED).
+
 ## Layout
 
 ```

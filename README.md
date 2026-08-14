@@ -84,6 +84,15 @@ dsh --profile tui
 说明：Web 侧的侧边栏 UI（回收站分组、拖动、预览面板等）仅存在于 Web 界面；TUI 通过
 上述命令驱动同一套宿主能力（回收站 / 跨工作区移动 / 文件读取共用同一份持久化状态）。
 
+## 补丁持久性
+
+- overlay 安装时采用「删除后复制」方式落盘，**与官方包的硬链接断开**——DSH 宿主用
+  `npx -y @deepseek-ai/dsh web` 重启服务时重新拉取官方包，不会连带覆盖已打补丁的文件。
+- Web 界面的插件解析以 **profile 的 `node_modules\@deepseek-ai`** 为准（补丁落在这里）。
+- TUI 建议固定使用一个完整的 dsh 安装（例如 `%USERPROFILE%\.dsh\dsh-pinned`，把 overlay
+  同时装到该目录），启动脚本直接 `node` 该目录下的 `bin.js`，绕开 npx 缓存刷新。
+- 升级 DSH 版本后需重新核对 overlay（`verify.ps1` 会报告 REVERTED）。
+
 ## 目录结构
 
 ```
