@@ -3569,7 +3569,7 @@ function createApiProxy(ctx, defaults) {
 				return openPath(request, request.payload.path, signal);
 			},
 			async readFile(request) {
-				const maxBytes = request.payload.maxBytes ?? 262144;
+				const maxBytes = request.payload.maxBytes ?? 524288;
 				try {
 					const canonical = resolve(request.payload.path);
 					const allowed = ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
@@ -3589,12 +3589,9 @@ function createApiProxy(ctx, defaults) {
 						message: `cannot preview "${request.payload.path}": not a regular file`,
 						details: {}
 					});
-					if (info.size > maxBytes) return err(request, {
-						code: "internal",
-						message: `cannot preview "${request.payload.path}": file is ${info.size} bytes (limit ${maxBytes} bytes)`,
-						details: {}
-					});
-					const buffer = await readFile(canonical);
+					const full = await readFile(canonical);
+					const truncated = full.length > maxBytes;
+					const buffer = truncated ? full.subarray(0, maxBytes) : full;
 					const probe = buffer.subarray(0, Math.min(8192, buffer.length));
 					let binary = false;
 					for (const byte of probe) if (byte === 0) {
@@ -3606,7 +3603,7 @@ function createApiProxy(ctx, defaults) {
 						size: info.size,
 						binary,
 						content: binary ? "" : buffer.toString("utf8"),
-						truncated: false
+						truncated
 					});
 				} catch (error) {
 					return err(request, {

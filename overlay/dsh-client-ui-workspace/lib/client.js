@@ -1438,22 +1438,41 @@ window.__ModuleLoader__.load({
 				},
 				role: "alert",
 				children: preview.error
+			}) : preview.binary === true ? (0, react_jsx_runtime.jsx)("div", {
+				className: WorkspacePicker_module_css_default.menuStatus,
+				style: {
+					padding: 16
+				},
+				children: t("preview.binary")
 			}) : preview.content === "" ? (0, react_jsx_runtime.jsx)("div", {
 				className: WorkspacePicker_module_css_default.menuStatus,
 				style: {
 					padding: 16
 				},
 				children: t("preview.empty")
-			}) : (0, react_jsx_runtime.jsx)("div", {
-				style: {
-					flex: 1,
-					minHeight: 0,
-					overflow: "auto",
-					padding: "8px 16px 24px"
-				},
-				children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.MarkdownText, {
-					text: bodyText
-				})
+			}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, {
+				children: [
+					preview.truncated === true && (0, react_jsx_runtime.jsx)("div", {
+						style: {
+							flex: "none",
+							padding: "8px 16px 0",
+							fontSize: 12,
+							color: "var(--dsw-alias-state-warn-primary)"
+						},
+						children: t("preview.truncated", { size: preview.size })
+					}),
+					(0, react_jsx_runtime.jsx)("div", {
+						style: {
+							flex: 1,
+							minHeight: 0,
+							overflow: "auto",
+							padding: "8px 16px 24px"
+						},
+						children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.MarkdownText, {
+							text: bodyText
+						})
+					})
+				]
 			});
 			return (0, react_jsx_runtime.jsxs)("div", {
 				style: {
@@ -2336,6 +2355,7 @@ window.__ModuleLoader__.load({
 						content: value.content,
 						binary: value.binary,
 						size: value.size,
+						truncated: value.truncated === true,
 						error: null
 					});
 				}, (error) => {
@@ -3250,6 +3270,7 @@ window.__ModuleLoader__.load({
 			"preview.close": "关闭预览",
 			"preview.busy": "正在读取…",
 			"preview.empty": "（空文件）",
+			"preview.truncated": "文件过大（{size} 字节），仅显示开头部分",
 			"preview.binary": "二进制文件（无法预览）"
 		};
 		/** English dictionary, checked complete against the zh key set. */
@@ -3341,6 +3362,7 @@ window.__ModuleLoader__.load({
 			"preview.close": "Close preview",
 			"preview.busy": "Reading…",
 			"preview.empty": "(empty file)",
+			"preview.truncated": "File too large ({size} bytes) — showing the beginning only",
 			"preview.binary": "Binary file (no preview)"
 		};
 		//#endregion
