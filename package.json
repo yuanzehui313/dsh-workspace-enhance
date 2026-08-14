@@ -18,22 +18,17 @@
     "./client": {
       "default": "./lib/client.js"
     },
-    "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "dsh": {
     "client": {
       "inject": [],
       "platform": "web"
-    },
-    "bundle": {
-      "patch": "./cordis.patch.yml"
     }
   },
   "files": [
     "lib/index.js",
     "lib/client.js",
-    "cordis.patch.yml",
     "overlay/**/*",
     "scripts/*.ps1",
     "README.md",

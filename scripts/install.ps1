@@ -4,22 +4,18 @@
 # Usage (PowerShell, full access):
 #   powershell -ExecutionPolicy Bypass -File scripts\install.ps1
 #   powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -ProfileRoot C:\Users\me\.dsh\profiles
-#   powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -TargetRoot C:\...\node_modules\@deepseek-ai
-#     (terminal/TUI profiles resolve host packages from the dsh CLI install —
-#      point -TargetRoot at that install's node_modules\@deepseek-ai instead)
 param(
-    [string]$ProfileRoot = "$env:USERPROFILE\.dsh\profiles",
-    [string]$TargetRoot = ""
+    [string]$ProfileRoot = "$env:USERPROFILE\.dsh\profiles"
 )
 
 $ErrorActionPreference = 'Stop'
 
 $repoRoot  = Split-Path -Parent $PSScriptRoot
 $overlay   = Join-Path $repoRoot 'overlay'
-$target    = if ($TargetRoot -ne "") { $TargetRoot } else { Join-Path $ProfileRoot 'node_modules\@deepseek-ai' }
+$target    = Join-Path $ProfileRoot 'node_modules\@deepseek-ai'
 $backupDir = Join-Path $repoRoot "backup\$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 
-if (-not (Test-Path $target)) { throw "DSH profile not found: $target (pass -ProfileRoot or -TargetRoot)" }
+if (-not (Test-Path $target)) { throw "DSH profile not found: $target (pass -ProfileRoot)" }
 
 $files = Get-ChildItem $overlay -Recurse -File | ForEach-Object { $_.FullName.Substring($overlay.Length + 1) }
 

@@ -1,9 +1,0 @@
-# dsh-workspace-enhance — additive host layer over the official composition.
-# The overlay patch-set (scripts/install.ps1) carries the deep bundle changes;
-# this row composes the package's own Cordis service, which registers the
-# terminal slash commands (/trash /trash-restore /trash-purge /move /preview)
-# and the ctx.workspaceEnhance capability marker.
-
-- insert:
-    - id: workspace-enhance
-      name: 'dsh-workspace-enhance'
