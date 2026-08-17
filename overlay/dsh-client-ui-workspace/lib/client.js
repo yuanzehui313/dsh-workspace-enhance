@@ -2019,6 +2019,16 @@ window.__ModuleLoader__.load({
 														onTrashRestoreWorkspace(row.workspaceId);
 													},
 													children: t("trash.restore")
+												}), (0, react_jsx_runtime.jsx)("button", {
+												type: "button",
+												style: trashActionStyle,
+												"aria-label": t("trash.purge"),
+												"title": t("trash.purge"),
+												onClick: (e) => {
+																								e.stopPropagation();
+																								onTrashPurgeWorkspace(row.workspaceId);;
+												},
+												children: t("trash.purge")
 												})]
 											})
 										]
@@ -2045,6 +2055,16 @@ window.__ModuleLoader__.load({
 														onTrashRestoreSession(row.sessionId);
 													},
 													children: t("trash.restore")
+												}), (0, react_jsx_runtime.jsx)("button", {
+												type: "button",
+												style: trashActionStyle,
+												"aria-label": t("trash.purge"),
+												"title": t("trash.purge"),
+												onClick: (e) => {
+																								e.stopPropagation();
+																								onTrashPurgeSession(row.sessionId);;
+												},
+												children: t("trash.purge")
 												})]
 											})
 										]
