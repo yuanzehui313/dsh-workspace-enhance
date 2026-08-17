@@ -1958,7 +1958,6 @@ window.__ModuleLoader__.load({
 						}), (() => {
 							const sessionRows = trashSessions ?? [];
 							const workspaceRows = trashWorkspaces ?? [];
-							if (sessionRows.length === 0 && workspaceRows.length === 0) return null;
 							return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, {
 								children: [
 									(0, react_jsx_runtime.jsxs)("div", {
