@@ -132,7 +132,7 @@ window.__ModuleLoader__.load({
 			return [...paths].sort().join("\u0000");
 		}
 		/** Build one group without projecting session lineage into presentation. */
-		function buildGroup(key, workspaceId, cwd, createdAt, label, members, order, memberIds, roots) {
+		function buildGroup(key, workspaceId, cwd, createdAt, label, members, order, memberIds, roots, files) {
 			const sessions = [...members];
 			if (order === "recency") sessions.sort(byRecency);
 			return {
@@ -143,7 +143,8 @@ window.__ModuleLoader__.load({
 				label,
 				sessions,
 				...memberIds === void 0 ? {} : { memberIds },
-				...roots === void 0 ? {} : { roots }
+				...roots === void 0 ? {} : { roots },
+				...files === void 0 ? {} : { files }
 			};
 		}
 		/** Apply a stored Ungrouped order and append newly loose Sessions by recency. */
@@ -229,9 +230,9 @@ window.__ModuleLoader__.load({
 				const roots = merged ? holder.members.map((workspace) => {
 					const acting = holder.members.find((member) => member.workspaceId !== workspace.workspaceId && (member.additionalPaths ?? []).includes(workspace.path));
 					return rootRow(workspace.path, acting === void 0 ? workspace.workspaceId : acting.workspaceId, workspace.sessionIds, acting !== void 0);
-				}) : workspaceRoots(primary).length > 1 ? workspaceRoots(primary).slice(1).map((path) => rootRow(path, primary.workspaceId, [], true)) : void 0;
+				}) : workspaceRoots(primary).map((path, index) => index === 0 ? rootRow(path, primary.workspaceId, [], false) : rootRow(path, primary.workspaceId, [], true));
 				const label = merged ? holder.members.map((workspace) => workspace.title).join(" \u00b7 ") : primary.title;
-				groups.push(buildGroup(primary.workspaceId, primary.workspaceId, primary.path, Date.parse(primary.createdAt), label, members, "account", merged ? holder.members.map((workspace) => workspace.workspaceId) : void 0, roots));
+				groups.push(buildGroup(primary.workspaceId, primary.workspaceId, primary.path, Date.parse(primary.createdAt), label, members, "account", merged ? holder.members.map((workspace) => workspace.workspaceId) : void 0, roots, (primary.files ?? []).map((file) => ({ ...file }))));
 			}
 			const stray = list.ids.map((id) => list.byId[id]).filter((s) => s !== void 0 && !accounted.has(s.id) && sessionVisible(s, list.current, archived));
 			groups.push(buildGroup("", void 0, void 0, void 0, UNGROUPED_LABEL, ungroupedOrder === void 0 ? stray : orderedUngrouped(stray, ungroupedOrder), ungroupedOrder === void 0 ? "recency" : "account"));
@@ -283,7 +284,8 @@ window.__ModuleLoader__.load({
 					containsCurrent: g.memberIds !== void 0 ? g.memberIds.includes(currentGroup) : g.key === currentGroup,
 					sessions: expanded ? g.sessions.map((session) => sessionNode(session, descendants)) : [],
 					...g.memberIds !== void 0 ? { memberIds: g.memberIds } : {},
-					...g.roots !== void 0 ? { roots: g.roots } : {}
+					...g.roots !== void 0 ? { roots: g.roots } : {},
+					...g.files !== void 0 ? { files: g.files } : {}
 				});
 			}
 			return groups;
@@ -593,16 +595,6 @@ window.__ModuleLoader__.load({
 								onCreate();
 							},
 							children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconPlusOutline16, {})
-						}), actions !== void 0 && (0, react_jsx_runtime.jsx)("button", {
-							type: "button",
-							className: Rows_module_css_default.iconButton,
-							"aria-label": t("menu.manageFolders"),
-							title: t("menu.manageFolders"),
-							onClick: (e) => {
-								e.stopPropagation();
-								actions.folders();
-							},
-							children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconFolderOpen16, {})
 						}), actions !== void 0 && (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
 							className: Rows_module_css_default.iconButton,
@@ -1062,7 +1054,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/home/runner/work/deepseek-harness/deepseek-harness/packages/client/ui-workspace/src/client/WorkspaceBrowser.module.css.mjs
-		const css = ".qDHVXG_root{--dsh-session-list-edge-inset:var(--dsh-sidebar-inline-padding);--dsh-session-list-scrollbar-width:8px;--dsh-session-list-scrollbar-offset:2px;box-sizing:border-box;min-height:0;padding-right:var(--dsh-session-list-edge-inset);flex-direction:column;flex:1;display:flex}.qDHVXG_root.qDHVXG_rail{padding-right:0}.qDHVXG_iconButton{cursor:pointer;width:28px;height:28px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_iconButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_sectionHeader{box-sizing:border-box;height:36px;color:var(--dsw-alias-label-tertiary);border-radius:12px;flex:none;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:4px;padding-left:4px;display:flex;overflow:hidden}.qDHVXG_root:not(.qDHVXG_rail) .qDHVXG_sectionHeader{margin-top:2px;margin-right:-4px}.qDHVXG_sectionLabel{white-space:nowrap;opacity:1;visibility:visible;min-width:0;max-width:45%;transition:max-width .18s var(--ds-ease-in-out), margin-right .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;line-height:20px;overflow:hidden}.qDHVXG_sectionLabelHidden{opacity:0;visibility:hidden;max-width:0;margin-right:-4px;transition-delay:0s,0s,0s,0s,.18s;transform:translate(-4px)}.qDHVXG_searchSlot{box-sizing:border-box;min-width:0;max-width:28px;transition:max-width .18s var(--ds-ease-in-out), padding-left .18s var(--ds-ease-in-out);flex:1;align-items:center;margin-left:auto;padding-left:0;display:flex}.qDHVXG_searchSlotExpanded{max-width:100%;padding-left:0}.qDHVXG_headerActions{opacity:1;visibility:visible;max-width:60px;transition:max-width .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;align-items:center;gap:4px;display:flex;overflow:hidden}.qDHVXG_headerActionsHidden{opacity:0;visibility:hidden;pointer-events:none;max-width:0;transition-delay:0s,0s,0s,.18s;transform:translate(4px)}.qDHVXG_search{box-sizing:border-box;cursor:text;width:100%;height:28px;color:var(--dsw-alias-label-secondary);transition:width .18s var(--ds-ease-in-out), padding .18s var(--ds-ease-in-out), border-color .18s var(--ds-ease-in-out), background-color .18s var(--ds-ease-in-out);background:0 0;border:none;border-radius:50%;flex:none;align-items:center;gap:0;margin:0;padding:0;display:flex;overflow:hidden}.qDHVXG_searchExpanded{border:1px solid var(--dsw-alias-border-l2);width:calc(100% + 4px);height:30px;color:var(--dsw-alias-label-caption);background:0 0;border-radius:10px;margin-inline:-2px;padding:0 4px 0 0}.qDHVXG_searchButton{cursor:pointer;width:28px;height:28px;color:inherit;background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_searchExpanded .qDHVXG_searchButton{width:28px;height:30px}.qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_searchExpanded .qDHVXG_searchButton:hover{background:0 0}.qDHVXG_searchInput{opacity:0;pointer-events:none;width:0;min-width:0;color:var(--dsw-alias-label-primary);transition:opacity .12s var(--ds-ease-in-out);background:0 0;border:none;outline:none;flex:1;font-size:13px;line-height:18px}.qDHVXG_searchExpanded .qDHVXG_searchInput{opacity:1;pointer-events:auto;margin-left:-2px}.qDHVXG_searchInput::placeholder{color:var(--dsw-alias-label-tertiary)}.qDHVXG_clearButton{cursor:pointer;width:24px;height:24px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_clearButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_rail .qDHVXG_sectionHeader{justify-content:flex-start;gap:0;margin-bottom:12px;padding-left:0}.qDHVXG_rail .qDHVXG_headerActions{max-width:none}.qDHVXG_rail .qDHVXG_iconButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_search{background:0 0;border-color:#0000;gap:0;width:36px;height:36px;margin:0 0 12px;padding:0}.qDHVXG_rail .qDHVXG_searchButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_listArea{min-height:0;margin-left:-4px;margin-right:calc(-1 * var(--dsh-session-list-edge-inset));flex-direction:column;flex:1;padding-left:4px;display:flex;overflow:visible}.qDHVXG_rail .qDHVXG_listArea{margin-left:0;margin-right:0;padding-left:0}.qDHVXG_treeBody{flex-direction:column;flex:1;min-height:0;display:flex;position:relative}.qDHVXG_fade{left:0;right:var(--dsh-session-list-edge-inset);background:linear-gradient(to bottom, transparent, var(--dsw-specific-sidebar-fill));pointer-events:none;height:24px;position:absolute;bottom:0}.qDHVXG_wide{animation:qDHVXG_wide-in .2s var(--ds-ease-in-out)}@keyframes qDHVXG_wide-in{0%{opacity:0}}.qDHVXG_list{min-height:0;margin-left:-4px;margin-right:var(--dsh-session-list-scrollbar-offset);padding-left:4px;padding-right:calc(var(--dsh-session-list-edge-inset) - var(--dsh-session-list-scrollbar-width) - var(--dsh-session-list-scrollbar-offset));scrollbar-gutter:stable;flex:1;padding-bottom:16px;overflow-y:auto}.qDHVXG_flatList>*+*,.qDHVXG_searchTree>[role=treeitem]+[role=treeitem],.qDHVXG_groupSection>*+*{margin-top:2px}.qDHVXG_searchStatus,.qDHVXG_searchWarning{color:var(--dsw-alias-label-tertiary);padding:10px 12px;font-size:12px;line-height:18px}.qDHVXG_searchWarning{color:var(--dsw-alias-label-secondary)}.qDHVXG_groupSection{position:relative}.qDHVXG_groupSection+.qDHVXG_groupSection{margin-top:4px}.qDHVXG_listTopDropIndicator,.qDHVXG_workspaceDropBefore:before,.qDHVXG_workspaceDropAfter:after{content:\"\";z-index:1;background:linear-gradient(55deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 0 / 5px 7px no-repeat, linear-gradient(125deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 5px / 5px 7px no-repeat, linear-gradient(var(--dsw-alias-state-business-primary) 0 0) 4px 5px / calc(100% - 4px) 2px no-repeat;pointer-events:none;height:12px;position:absolute;left:0;right:0}.qDHVXG_listTopDropIndicator{top:-8px;left:0;right:var(--dsh-session-list-edge-inset)}.qDHVXG_listTopDropActive>.qDHVXG_workspaceDropBefore:first-child:before{display:none}.qDHVXG_workspaceDropBefore:before{top:-8px}.qDHVXG_workspaceDropAfter:after{bottom:-8px}.qDHVXG_sessionOverflowButton{cursor:pointer;text-align:left;width:100%;height:28px;color:var(--dsw-alias-label-tertiary);background:0 0;border:none;border-radius:8px;padding:0 12px 0 28px;font-size:12px}.qDHVXG_groupSection>.qDHVXG_sessionOverflowButton{margin-top:0}.qDHVXG_sessionOverflowButton:hover{color:var(--dsw-alias-label-secondary);background:0 0}.qDHVXG_empty{color:var(--dsw-alias-label-tertiary);padding:16px 12px;font-size:13px}.qDHVXG_renameInput{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);width:100%;height:44px;color:var(--dsw-alias-label-primary);background:0 0;border-radius:22px;outline:none;padding:7px 14px;font-size:14px;font-weight:400;line-height:22px}.qDHVXG_renameInput:disabled{color:var(--dsw-alias-label-dimmed)}.qDHVXG_renameError{color:var(--dsw-alias-state-error-primary);margin-top:8px;font-size:12px;line-height:18px}.qDHVXG_deleteAction:not(:disabled){color:var(--dsw-alias-state-error-primary)}.qDHVXG_deleteStatus{color:var(--dsw-alias-label-secondary);font-size:12px;line-height:18px}@media (prefers-reduced-motion:reduce){.qDHVXG_wide{animation:none}.qDHVXG_search,.qDHVXG_sectionLabel,.qDHVXG_searchSlot,.qDHVXG_searchInput,.qDHVXG_headerActions{transition:none}}.qDHVXG_mergeBar{display:flex;align-items:center;gap:8px;padding:10px 12px 10px;margin-top:10px;border-top:1px solid var(--dsw-alias-interactive-bg-hover);font-weight:600}.qDHVXG_mergeHint{flex:1;min-width:0;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);font-weight:600}";
+		const css = ".qDHVXG_root{--dsh-session-list-edge-inset:var(--dsh-sidebar-inline-padding);--dsh-session-list-scrollbar-width:8px;--dsh-session-list-scrollbar-offset:2px;box-sizing:border-box;min-height:0;padding-right:var(--dsh-session-list-edge-inset);flex-direction:column;flex:1;display:flex}.qDHVXG_root.qDHVXG_rail{padding-right:0}.qDHVXG_iconButton{cursor:pointer;width:28px;height:28px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_iconButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_sectionHeader{box-sizing:border-box;height:36px;color:var(--dsw-alias-label-tertiary);border-radius:12px;flex:none;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:4px;padding-left:4px;display:flex;overflow:hidden}.qDHVXG_root:not(.qDHVXG_rail) .qDHVXG_sectionHeader{margin-top:2px;margin-right:-4px}.qDHVXG_sectionLabel{white-space:nowrap;opacity:1;visibility:visible;min-width:0;max-width:45%;transition:max-width .18s var(--ds-ease-in-out), margin-right .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;line-height:20px;overflow:hidden}.qDHVXG_sectionLabelHidden{opacity:0;visibility:hidden;max-width:0;margin-right:-4px;transition-delay:0s,0s,0s,0s,.18s;transform:translate(-4px)}.qDHVXG_searchSlot{box-sizing:border-box;min-width:0;max-width:28px;transition:max-width .18s var(--ds-ease-in-out), padding-left .18s var(--ds-ease-in-out);flex:1;align-items:center;margin-left:auto;padding-left:0;display:flex}.qDHVXG_searchSlotExpanded{max-width:100%;padding-left:0}.qDHVXG_headerActions{opacity:1;visibility:visible;max-width:60px;transition:max-width .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;align-items:center;gap:4px;display:flex;overflow:hidden}.qDHVXG_headerActionsHidden{opacity:0;visibility:hidden;pointer-events:none;max-width:0;transition-delay:0s,0s,0s,.18s;transform:translate(4px)}.qDHVXG_search{box-sizing:border-box;cursor:text;width:100%;height:28px;color:var(--dsw-alias-label-secondary);transition:width .18s var(--ds-ease-in-out), padding .18s var(--ds-ease-in-out), border-color .18s var(--ds-ease-in-out), background-color .18s var(--ds-ease-in-out);background:0 0;border:none;border-radius:50%;flex:none;align-items:center;gap:0;margin:0;padding:0;display:flex;overflow:hidden}.qDHVXG_searchExpanded{border:1px solid var(--dsw-alias-border-l2);width:calc(100% + 4px);height:30px;color:var(--dsw-alias-label-caption);background:0 0;border-radius:10px;margin-inline:-2px;padding:0 4px 0 0}.qDHVXG_searchButton{cursor:pointer;width:28px;height:28px;color:inherit;background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_searchExpanded .qDHVXG_searchButton{width:28px;height:30px}.qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_searchExpanded .qDHVXG_searchButton:hover{background:0 0}.qDHVXG_searchInput{opacity:0;pointer-events:none;width:0;min-width:0;color:var(--dsw-alias-label-primary);transition:opacity .12s var(--ds-ease-in-out);background:0 0;border:none;outline:none;flex:1;font-size:13px;line-height:18px}.qDHVXG_searchExpanded .qDHVXG_searchInput{opacity:1;pointer-events:auto;margin-left:-2px}.qDHVXG_searchInput::placeholder{color:var(--dsw-alias-label-tertiary)}.qDHVXG_clearButton{cursor:pointer;width:24px;height:24px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_clearButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_rail .qDHVXG_sectionHeader{justify-content:flex-start;gap:0;margin-bottom:12px;padding-left:0}.qDHVXG_rail .qDHVXG_headerActions{max-width:none}.qDHVXG_rail .qDHVXG_iconButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_search{background:0 0;border-color:#0000;gap:0;width:36px;height:36px;margin:0 0 12px;padding:0}.qDHVXG_rail .qDHVXG_searchButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_listArea{min-height:0;margin-left:-4px;margin-right:calc(-1 * var(--dsh-session-list-edge-inset));flex-direction:column;flex:1;padding-left:4px;display:flex;overflow:visible}.qDHVXG_rail .qDHVXG_listArea{margin-left:0;margin-right:0;padding-left:0}.qDHVXG_treeBody{flex-direction:column;flex:1;min-height:0;display:flex;position:relative;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}.qDHVXG_fade{left:0;right:var(--dsh-session-list-edge-inset);background:linear-gradient(to bottom, transparent, var(--dsw-specific-sidebar-fill));pointer-events:none;height:24px;position:absolute;bottom:0}.qDHVXG_wide{animation:qDHVXG_wide-in .2s var(--ds-ease-in-out)}@keyframes qDHVXG_wide-in{0%{opacity:0}}.qDHVXG_list{min-height:0;margin-left:-4px;margin-right:var(--dsh-session-list-scrollbar-offset);padding-left:4px;padding-right:calc(var(--dsh-session-list-edge-inset) - var(--dsh-session-list-scrollbar-width) - var(--dsh-session-list-scrollbar-offset));scrollbar-gutter:stable;flex:1;padding-bottom:16px;overflow-y:auto}.qDHVXG_flatList>*+*,.qDHVXG_searchTree>[role=treeitem]+[role=treeitem],.qDHVXG_groupSection>*+*{margin-top:2px}.qDHVXG_searchStatus,.qDHVXG_searchWarning{color:var(--dsw-alias-label-tertiary);padding:10px 12px;font-size:12px;line-height:18px}.qDHVXG_searchWarning{color:var(--dsw-alias-label-secondary)}.qDHVXG_groupSection{position:relative}.qDHVXG_groupSection+.qDHVXG_groupSection{margin-top:4px}.qDHVXG_listTopDropIndicator,.qDHVXG_workspaceDropBefore:before,.qDHVXG_workspaceDropAfter:after{content:\"\";z-index:1;background:linear-gradient(55deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 0 / 5px 7px no-repeat, linear-gradient(125deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 5px / 5px 7px no-repeat, linear-gradient(var(--dsw-alias-state-business-primary) 0 0) 4px 5px / calc(100% - 4px) 2px no-repeat;pointer-events:none;height:12px;position:absolute;left:0;right:0}.qDHVXG_listTopDropIndicator{top:-8px;left:0;right:var(--dsh-session-list-edge-inset)}.qDHVXG_listTopDropActive>.qDHVXG_workspaceDropBefore:first-child:before{display:none}.qDHVXG_workspaceDropBefore:before{top:-8px}.qDHVXG_workspaceDropAfter:after{bottom:-8px}.qDHVXG_sessionOverflowButton{cursor:pointer;text-align:left;width:100%;height:28px;color:var(--dsw-alias-label-tertiary);background:0 0;border:none;border-radius:8px;padding:0 12px 0 28px;font-size:12px}.qDHVXG_groupSection>.qDHVXG_sessionOverflowButton{margin-top:0}.qDHVXG_sessionOverflowButton:hover{color:var(--dsw-alias-label-secondary);background:0 0}.qDHVXG_empty{color:var(--dsw-alias-label-tertiary);padding:16px 12px;font-size:13px}.qDHVXG_renameInput{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);width:100%;height:44px;color:var(--dsw-alias-label-primary);background:0 0;border-radius:22px;outline:none;padding:7px 14px;font-size:14px;font-weight:400;line-height:22px}.qDHVXG_renameInput:disabled{color:var(--dsw-alias-label-dimmed)}.qDHVXG_renameError{color:var(--dsw-alias-state-error-primary);margin-top:8px;font-size:12px;line-height:18px}.qDHVXG_deleteAction:not(:disabled){color:var(--dsw-alias-state-error-primary)}.qDHVXG_deleteStatus{color:var(--dsw-alias-label-secondary);font-size:12px;line-height:18px}@media (prefers-reduced-motion:reduce){.qDHVXG_wide{animation:none}.qDHVXG_search,.qDHVXG_sectionLabel,.qDHVXG_searchSlot,.qDHVXG_searchInput,.qDHVXG_headerActions{transition:none}}.qDHVXG_mergeBar{display:flex;align-items:center;gap:8px;padding:10px 12px 10px;margin-top:10px;border-top:1px solid var(--dsw-alias-interactive-bg-hover);font-weight:600}.qDHVXG_mergeHint{flex:1;min-width:0;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);font-weight:600}";
 		const tagId = "@deepseek-ai/dsh-client-ui-workspace/WorkspaceBrowser.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -1423,6 +1415,8 @@ window.__ModuleLoader__.load({
 			const dot = fileName.lastIndexOf(".");
 			const ext = dot > 0 ? fileName.slice(dot + 1).toLowerCase() : "";
 			const isMarkdown = ext === "md" || ext === "markdown";
+			const imageExts = new Set(["png", "jpg", "jpeg", "gif", "webp", "svg"]);
+			const imageMime = ext === "svg" ? "image/svg+xml" : "image/" + ext;
 			const codeLangs = new Set(["js", "jsx", "ts", "tsx", "json", "vue", "java", "xml", "yml", "yaml", "py", "go", "rs", "c", "cpp", "h", "hpp", "css", "scss", "less", "html", "htm", "sh", "ps1", "bat", "cmd", "sql", "toml", "ini", "conf", "properties", "gradle"]);
 			const bodyText = preview.phase !== "ready" || isMarkdown || !codeLangs.has(ext) ? preview.content : "```" + ext + "\n" + preview.content + "\n```";
 			const body = preview.phase === "loading" ? (0, react_jsx_runtime.jsx)("div", {
@@ -1438,6 +1432,27 @@ window.__ModuleLoader__.load({
 				},
 				role: "alert",
 				children: preview.error
+			}) : preview.data !== void 0 && imageExts.has(ext) ? (0, react_jsx_runtime.jsx)("div", {
+				style: {
+					flex: 1,
+					minHeight: 0,
+					overflow: "auto",
+					padding: 16,
+					display: "flex",
+					alignItems: "flex-start",
+					justifyContent: "center"
+				},
+				children: (0, react_jsx_runtime.jsx)("img", {
+					src: "data:" + imageMime + ";base64," + preview.data,
+					alt: fileName,
+					style: {
+						maxWidth: "100%",
+						maxHeight: "100%",
+						objectFit: "contain",
+						borderRadius: 8,
+						background: "rgba(255,255,255,0.04)"
+					}
+				})
 			}) : preview.binary === true ? (0, react_jsx_runtime.jsx)("div", {
 				className: WorkspacePicker_module_css_default.menuStatus,
 				style: {
@@ -1554,7 +1569,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		/** The scrolling session tree; unmounting drops the sessions subscription and expand-all state. */
-		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, onOpenFile, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onRootReselect, onRootRemove, listDirectory, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
+		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, onOpenFile, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onWorkspaceFileRemove, onAddItemsRequest, onWorkspaceFilesDrop, onRootReselect, onRootRemove, listDirectory, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
 			const list = useSessions((s) => s);
 			const current = list.current;
 			const [expandedSessionGroups, setExpandedSessionGroups] = (0, react.useState)([]);
@@ -1562,6 +1577,28 @@ window.__ModuleLoader__.load({
 			const toggleRootPath = (path) => {
 				setExpandedRootPaths((previous) => previous.includes(path) ? previous.filter((candidate) => candidate !== path) : [...previous, path]);
 			};
+			/** Session ids whose mounted-file block is collapsed (click the block header to toggle). */
+			const [collapsedSessionFiles, setCollapsedSessionFiles] = (0, react.useState)(() => /* @__PURE__ */ new Set());
+			const toggleSessionFiles = (sessionId) => {
+				setCollapsedSessionFiles((previous) => {
+					const next = new Set(previous);
+					if (next.has(sessionId)) next.delete(sessionId);
+					else next.add(sessionId);
+					return next;
+				});
+			};
+			/** Group keys whose folder/file sections are collapsed (click the section header to toggle). */
+			const [collapsedSections, setCollapsedSections] = (0, react.useState)(() => /* @__PURE__ */ new Set());
+			const toggleSection = (key) => {
+				setCollapsedSections((previous) => {
+					const next = new Set(previous);
+					if (next.has(key)) next.delete(key);
+					else next.add(key);
+					return next;
+				});
+			};
+			/** Drag-over highlight for the public file area. */
+			const [fileDropActive, setFileDropActive] = (0, react.useState)(null);
 			const [drag, setDrag] = (0, react.useState)(null);
 			const sessionDropCommitted = (0, react.useRef)(false);
 			const [workspaceDrag, setWorkspaceDrag] = (0, react.useState)(null);
@@ -1782,17 +1819,63 @@ window.__ModuleLoader__.load({
 												/* v8 ignore next -- narrowing guard: the actions object exists only for real-workspace groups. */
 												if (group.workspaceId !== void 0) onRenameRequest(group.workspaceId, group.label);
 											},
-											folders: () => {
-												/* v8 ignore next -- narrowing guard: the actions object exists only for real-workspace groups. */
-												if (group.workspaceId !== void 0) onFoldersRequest(group.workspaceId);
-											},
 											delete: () => {
 												/* v8 ignore next -- narrowing guard: the actions object exists only for real-workspace groups. */
 												if (group.workspaceId !== void 0) onDeleteRequest(group.workspaceId, group.label);
 											}
 										}
 									}),
-									(group.roots ?? []).map((root) => (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, {
+(() => {
+						const publicFiles = (group.files ?? []).filter((file) => file.sessionId === void 0);
+						if (group.workspaceId === void 0) return null;
+						const foldersKey = group.key + ":folders";
+						const filesKey = group.key + ":files";
+						const foldersCollapsed = collapsedSections.has(foldersKey);
+						const filesCollapsed = collapsedSections.has(filesKey);
+						return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, {
+							children: [
+								(0, react_jsx_runtime.jsxs)("div", {
+									style: { background: "rgba(96,165,250,0.08)", borderRadius: 8, margin: "0 6px 6px", padding: "2px 0 4px" },
+									children: [
+										(0, react_jsx_runtime.jsxs)("div", {
+											className: Rows_module_css_default.sessionRow,
+											style: { paddingLeft: 10, cursor: "pointer" },
+											role: "button",
+											"aria-label": t("folders.section"),
+											title: t("folders.section"),
+											onClick: () => toggleSection(foldersKey),
+											children: [
+												(0, react_jsx_runtime.jsx)("span", {
+													className: clsx(Rows_module_css_default.slot, Rows_module_css_default.chevron),
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconTriangleRightFill14, {
+														className: clsx(Rows_module_css_default.arrow, !foldersCollapsed && Rows_module_css_default.arrowOpen)
+													})
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													className: Rows_module_css_default.slot,
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconFolderClose16, {})
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													className: Rows_module_css_default.title,
+													children: t("folders.section")
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													style: { flex: 1 }
+												}),
+												(0, react_jsx_runtime.jsx)("button", {
+													type: "button",
+													className: Rows_module_css_default.iconButton,
+													"aria-label": t("section.add"),
+													title: t("section.add"),
+													onClick: (e) => {
+														e.stopPropagation();
+														if (group.workspaceId !== void 0) onAddItemsRequest(group.workspaceId);
+													},
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconPlusOutline16, {})
+												})
+											]
+										}, "folders-section-title"),
+										!foldersCollapsed && (group.roots ?? []).map((root) => (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, {
 										children: [
 											(0, react_jsx_runtime.jsxs)("div", {
 												className: Rows_module_css_default.sessionRow,
@@ -1848,6 +1931,109 @@ window.__ModuleLoader__.load({
 											}, "root-tree-" + root.path)
 										]
 									}, root.workspaceId)),
+									]
+								}, "folders-section"),
+								(0, react_jsx_runtime.jsxs)("div", {
+									style: { background: "rgba(167,139,250,0.08)", borderRadius: 8, margin: "0 6px 6px", padding: "2px 0 4px", ...fileDropActive === group.key ? { outline: "1px dashed var(--dsw-alias-border-l2-strong, #8b7cf7)", outlineOffset: -3 } : {} },
+									onDragOver: (e) => {
+										e.preventDefault();
+										setFileDropActive(group.key);
+									},
+									onDragLeave: () => {
+										setFileDropActive((current) => current === group.key ? null : current);
+									},
+									onDrop: (e) => {
+										e.preventDefault();
+										setFileDropActive(null);
+										const dropped = Array.from(e.dataTransfer?.files ?? []);
+										if (dropped.length > 0 && group.workspaceId !== void 0) onWorkspaceFilesDrop(group.workspaceId, dropped);
+									},
+									children: [
+										(0, react_jsx_runtime.jsxs)("div", {
+											className: Rows_module_css_default.sessionRow,
+											style: { paddingLeft: 10, cursor: "pointer" },
+											role: "button",
+											"aria-label": t("files.section"),
+											title: t("files.section"),
+											onClick: () => toggleSection(filesKey),
+											children: [
+												(0, react_jsx_runtime.jsx)("span", {
+													className: clsx(Rows_module_css_default.slot, Rows_module_css_default.chevron),
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconTriangleRightFill14, {
+														className: clsx(Rows_module_css_default.arrow, !filesCollapsed && Rows_module_css_default.arrowOpen)
+													})
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													className: Rows_module_css_default.slot,
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCodeOutline16, {})
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													className: Rows_module_css_default.title,
+													children: t("files.section")
+												}),
+												publicFiles.length > 0 && (0, react_jsx_runtime.jsx)("span", {
+													className: Rows_module_css_default.time,
+													children: t("files.count", { n: publicFiles.length })
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													style: { flex: 1 }
+												}),
+												(0, react_jsx_runtime.jsx)("button", {
+													type: "button",
+													className: Rows_module_css_default.iconButton,
+													"aria-label": t("section.add"),
+													title: t("section.add"),
+													onClick: (e) => {
+														e.stopPropagation();
+														if (group.workspaceId !== void 0) onAddItemsRequest(group.workspaceId);
+													},
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconPlusOutline16, {})
+												})
+											]
+										}, "files-section-title"),
+										!filesCollapsed && (publicFiles.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
+											className: Rows_module_css_default.sessionRow,
+											style: { paddingLeft: 28, opacity: 0.7 },
+											children: (0, react_jsx_runtime.jsx)("span", {
+												className: Rows_module_css_default.title,
+												children: t("files.empty")
+											})
+										}, "files-empty") : null),
+										!filesCollapsed && publicFiles.map((file) => (0, react_jsx_runtime.jsxs)("div", {
+											className: Rows_module_css_default.sessionRow,
+											style: { paddingLeft: 28, position: "relative", cursor: file.path !== void 0 ? "pointer" : "default" },
+											title: file.path ?? file.name,
+											onClick: () => {
+												if (file.path !== void 0) onOpenFile(file.path);
+											},
+											children: [
+												(0, react_jsx_runtime.jsx)("span", {
+													className: Rows_module_css_default.slot,
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconLinkOutline16, {})
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													className: Rows_module_css_default.title,
+													children: file.name
+												}),
+												(0, react_jsx_runtime.jsx)("button", {
+													type: "button",
+													className: Rows_module_css_default.rootClose,
+													style: { display: "inline-flex" },
+													"aria-label": t("files.remove"),
+													title: t("files.remove"),
+													onClick: (e) => {
+														e.stopPropagation();
+														if (group.workspaceId !== void 0) onWorkspaceFileRemove(group.workspaceId, file.id);
+													},
+													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, { size: 14 })
+												})
+											]
+										}, file.id))
+									]
+								}, "files-section")
+							]
+						}, "root-and-file-sections");
+					})(),
 									(() => {
 										const visibleNodes = expandedSessionGroups.includes(group.key) ? group.sessions : group.sessions.slice(0, COLLAPSED_SESSION_LIMIT);
 										const visibleIds = new Set(visibleNodes.map((node) => node.id));
@@ -1862,7 +2048,79 @@ window.__ModuleLoader__.load({
 											const sameGroupDrag = drag !== null && drag.accountKey === group.key;
 											return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, {
 												children: [
-													(0, react_jsx_runtime.jsx)(SessionNodeItem, {
+													(() => {
+											const sessionFiles = (group.files ?? []).filter((file) => file.sessionId === node.id);
+											if (sessionFiles.length === 0) return null;
+											const sessionFilesCollapsed = collapsedSessionFiles.has(node.id);
+											return (0, react_jsx_runtime.jsxs)("div", {
+												style: { background: "rgba(52,211,153,0.07)", borderRadius: 8, margin: "1px 4px 2px", padding: "1px 0 2px", borderLeft: "2px solid rgba(52,211,153,0.55)" },
+												children: [
+													(0, react_jsx_runtime.jsxs)("div", {
+														className: Rows_module_css_default.sessionRow,
+														style: { paddingLeft: 28 + depth * 16, cursor: "pointer" },
+														role: "button",
+														"aria-label": t("files.toggle"),
+														title: t("files.toggle"),
+														onClick: () => toggleSessionFiles(node.id),
+														children: [
+															(0, react_jsx_runtime.jsx)("span", {
+																className: clsx(Rows_module_css_default.slot, Rows_module_css_default.chevron),
+																children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconTriangleRightFill14, {
+																	className: clsx(Rows_module_css_default.arrow, !sessionFilesCollapsed && Rows_module_css_default.arrowOpen)
+																})
+															}),
+															(0, react_jsx_runtime.jsx)("span", {
+																className: Rows_module_css_default.slot,
+																children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconPaperclipOutline16, {})
+															}),
+															(0, react_jsx_runtime.jsx)("span", {
+																className: Rows_module_css_default.title,
+																children: t("files.sessionSection")
+															}),
+															(0, react_jsx_runtime.jsx)("span", {
+																className: Rows_module_css_default.time,
+																children: t("files.count", { n: sessionFiles.length })
+															}),
+															(0, react_jsx_runtime.jsx)("span", {
+																className: Rows_module_css_default.time,
+																style: { opacity: 0.75 },
+																children: "\u00b7 " + displayTitle(node, t)
+															})
+														]
+													}, "session-files-head-" + node.id),
+													!sessionFilesCollapsed && sessionFiles.map((file) => (0, react_jsx_runtime.jsxs)("div", {
+														className: Rows_module_css_default.sessionRow,
+														style: { paddingLeft: 44 + depth * 16, position: "relative", cursor: file.path !== void 0 ? "pointer" : "default" },
+														title: file.path ?? file.name,
+														onClick: () => {
+															if (file.path !== void 0) onOpenFile(file.path);
+														},
+														children: [
+															(0, react_jsx_runtime.jsx)("span", {
+																className: Rows_module_css_default.slot,
+																children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconLinkOutline16, {})
+															}),
+															(0, react_jsx_runtime.jsx)("span", {
+																className: Rows_module_css_default.title,
+																children: file.name
+															}),
+															(0, react_jsx_runtime.jsx)("button", {
+																type: "button",
+																className: Rows_module_css_default.rootClose,
+																style: { display: "inline-flex" },
+																"aria-label": t("files.remove"),
+																title: t("files.remove"),
+																onClick: (e) => {
+																	e.stopPropagation();
+																	if (group.workspaceId !== void 0) onWorkspaceFileRemove(group.workspaceId, file.id);
+																},
+																children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, { size: 14 })
+															})
+														]
+													}, "session-file-" + file.id))
+												]
+											}, "session-files-" + node.id);
+										})(),													(0, react_jsx_runtime.jsx)(SessionNodeItem, {
 														node,
 														depth,
 														currentId: current,
@@ -2270,11 +2528,139 @@ window.__ModuleLoader__.load({
 			});
 		}
 		/**
+		* Inline multi-select browser for the folders-and-files modal: one pane
+		* listing the current level; folders navigate, files and folders both
+		* check, and confirm returns the picked set split by kind.
+		*/
+		function MultiPickBrowser({ open, listDirectory, t, onClose, onPicked }) {
+			const [path, setPath] = (0, react.useState)(null);
+			const [listing, setListing] = (0, react.useState)(null);
+			const [loading, setLoading] = (0, react.useState)(false);
+			const [error, setError] = (0, react.useState)(null);
+			const [checked, setChecked] = (0, react.useState)([]);
+			const [notifiedEmpty, setNotifiedEmpty] = (0, react.useState)(false);
+			const load = (0, react.useCallback)((targetPath) => {
+				setLoading(true);
+				setError(null);
+				listDirectory(targetPath === null ? void 0 : targetPath, void 0).then((result) => {
+					setListing(result);
+					setPath(result.path);
+				}, (failure) => {
+					setError(failure instanceof Error ? failure.message : String(failure));
+				}).finally(() => {
+					setLoading(false);
+				});
+			}, [listDirectory]);
+			(0, react.useEffect)(() => {
+				if (open) {
+					setChecked([]);
+					setNotifiedEmpty(false);
+					load(null);
+				}
+			}, [open, load]);
+			const entries = listing === null ? [] : listing.entries;
+			const crumbs = listing === null ? [] : listing.crumbs;
+			const upPath = crumbs.length > 0 ? crumbs[crumbs.length - 1].path : null;
+			const toggle = (entry) => {
+				setChecked((previous) => previous.some((candidate) => candidate.path === entry.path) ? previous.filter((candidate) => candidate.path !== entry.path) : [...previous, { path: entry.path, kind: entry.kind === "file" ? "file" : "directory", name: entry.name }]);
+			};
+			const confirm = () => {
+				const directories = checked.filter((candidate) => candidate.kind === "directory").map((candidate) => candidate.path);
+				const files = checked.filter((candidate) => candidate.kind === "file").map((candidate) => ({ path: candidate.path, name: candidate.name }));
+				if (directories.length === 0 && files.length === 0) {
+					setNotifiedEmpty(true);
+					return;
+				}
+				onPicked({ directories, files });
+			};
+			return (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+				open,
+				onClose,
+				closeLabel: t("close"),
+				title: t("pick.title"),
+				footer: (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "outline",
+					disabled: upPath === null || loading,
+					onClick: () => {
+						if (upPath !== null) load(upPath);
+					},
+					children: t("pick.up")
+				}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "outline",
+					onClick: onClose,
+					children: t("cancel")
+				}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "primary",
+					disabled: loading,
+					onClick: confirm,
+					children: t("pick.confirm", { n: checked.length })
+				})] }),
+				children: [
+					(0, react_jsx_runtime.jsx)("div", {
+						style: { padding: "2px 4px 8px", color: "var(--dsw-alias-label-secondary)", fontSize: 12 },
+						children: t("pick.none")
+					}, "pick-hint"),
+					loading && (0, react_jsx_runtime.jsx)("div", {
+						className: WorkspacePicker_module_css_default.menuStatus,
+						role: "status",
+						children: t("folders.busy")
+					}),
+					error !== null && (0, react_jsx_runtime.jsx)("div", {
+						className: WorkspacePicker_module_css_default.modalError,
+						role: "alert",
+						children: error
+					}),
+					notifiedEmpty && (0, react_jsx_runtime.jsx)("div", {
+						className: WorkspacePicker_module_css_default.modalError,
+						role: "alert",
+						children: t("pick.none")
+					}),
+					(0, react_jsx_runtime.jsx)("div", {
+					style: { maxHeight: 320, overflowY: "auto", minHeight: 0, display: "flex", flexDirection: "column" },
+					children: entries.map((entry) => {
+						const isDir = entry.kind !== "file";
+						const isChecked = checked.some((candidate) => candidate.path === entry.path);
+						return (0, react_jsx_runtime.jsxs)("div", {
+							className: Rows_module_css_default.sessionRow,
+							style: { paddingLeft: 8, cursor: "pointer" },
+							title: entry.path,
+							onClick: () => {
+								if (isDir) load(entry.path);
+								else toggle(entry);
+							},
+							children: [
+								(0, react_jsx_runtime.jsx)("span", {
+									className: Rows_module_css_default.slot,
+									style: { cursor: "pointer" },
+									onClick: (e) => {
+										e.stopPropagation();
+										toggle(entry);
+									},
+									children: isChecked ? (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutline16, {}) : (0, react_jsx_runtime.jsx)("span", {
+										style: { display: "inline-block", width: 14, height: 14, border: "1px solid var(--dsw-alias-border-l2)", borderRadius: 3 }
+									})
+								}),
+								(0, react_jsx_runtime.jsx)("span", {
+									className: Rows_module_css_default.slot,
+									children: (0, react_jsx_runtime.jsx)(isDir ? _deepseek_ai_dsh_client_ui_primitives.IconFolderClose16 : _deepseek_ai_dsh_client_ui_primitives.IconCodeOutline16, {})
+								}),
+								(0, react_jsx_runtime.jsx)("span", {
+									className: Rows_module_css_default.title,
+									children: entry.name
+								})
+							]
+						}, "pick-entry-" + entry.path);
+					})
+				}, "pick-entries-scroll")
+				]
+			});
+		}
+		/**
 		* Render the browsing region.
 		* @param props - composed slot props (shell owner share + store + injected actions).
 		* @returns the region element tree.
 		*/
-		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, readFile, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, listDirectory, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
+		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, readFile, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, addWorkspaceFiles, removeWorkspaceFile, importWorkspaceFiles, listDirectory, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
 			const sessionList = useSessions((state) => state);
 			const workspaces = useWorkspaces((state) => state.items);
 			const workspacePhase = useWorkspaces((state) => state.phase);
@@ -2315,6 +2701,8 @@ window.__ModuleLoader__.load({
 			const [foldersError, setFoldersError] = (0, react.useState)(null);
 			const [foldersFlowOpen, setFoldersFlowOpen] = (0, react.useState)(false);
 			const [foldersReplace, setFoldersReplace] = (0, react.useState)(null);
+			const [pickOpen, setPickOpen] = (0, react.useState)(false);
+			const [pickTarget, setPickTarget] = (0, react.useState)(null);
 			const foldersWorkspace = foldersTarget === null ? void 0 : workspaces.find((workspace) => workspace.workspaceId === foldersTarget);
 			const closeFolders = () => {
 				setFoldersTarget(null);
@@ -2355,6 +2743,7 @@ window.__ModuleLoader__.load({
 						binary: value.binary,
 						size: value.size,
 						truncated: value.truncated === true,
+						data: value.data,
 						error: null
 					});
 				}, (error) => {
@@ -2892,6 +3281,35 @@ window.__ModuleLoader__.load({
 								setFoldersFlowOpen(false);
 								setFoldersReplace(null);
 							},
+							onWorkspaceFileRemove: (workspaceId, fileId) => {
+								removeWorkspaceFile(workspaceId, fileId).catch((error) => {
+									console.warn("workspace file remove rejected:", error);
+								});
+							},
+							onAddItemsRequest: (workspaceId) => {
+								setPickTarget(workspaceId);
+								setFoldersError(null);
+								setPickOpen(true);
+							},
+							onWorkspaceFilesDrop: (workspaceId, files) => {
+								const run = async () => {
+									const entries = [];
+									for (const file of files) {
+										if (file.size > 5242880) {
+											console.warn("workspace file drop skipped (over 5MB):", file.name);
+											continue;
+										}
+										const bytes = new Uint8Array(await file.arrayBuffer());
+										let binary = "";
+										for (let offset = 0; offset < bytes.length; offset += 32768) binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
+										entries.push({ name: file.name, data: btoa(binary) });
+									}
+									if (entries.length > 0) await importWorkspaceFiles(workspaceId, entries);
+								};
+								run().catch((error) => {
+									console.warn("workspace file drop rejected:", error);
+								});
+							},
 							onRootReselect: (workspaceId, path) => {
 								setFoldersReplace({
 									workspaceId,
@@ -2904,6 +3322,11 @@ window.__ModuleLoader__.load({
 								const target = workspaces.find((workspace) => workspace.workspaceId === workspaceId);
 								if (target === void 0) return;
 								applyFolders(workspaceId, (target.additionalPaths ?? []).filter((candidate) => candidate !== path));
+							},
+							onWorkspaceFileRemove: (workspaceId, fileId) => {
+								removeWorkspaceFile(workspaceId, fileId).catch((error) => {
+									console.warn("workspace file remove rejected:", error);
+								});
 							}
 						}))
 					}),
@@ -2969,13 +3392,13 @@ window.__ModuleLoader__.load({
 						title: t("folders.title"),
 						footer: (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 							variant: "outline",
-							disabled: foldersBusy || !directoryFlowAvailable,
+							disabled: foldersBusy,
 							onClick: () => {
 								setFoldersReplace(null);
-								setFoldersFlowOpen(true);
+								setPickOpen(true);
 								setFoldersError(null);
 							},
-							children: t("folders.add")
+							children: t("pick.title")
 						}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 							variant: "primary",
 							disabled: foldersBusy,
@@ -3016,6 +3439,32 @@ window.__ModuleLoader__.load({
 									})
 								]
 							}, path))),
+							...(foldersWorkspace === void 0 ? [] : (foldersWorkspace.files ?? []).filter((file) => file.path !== void 0).map((file) => (0, react_jsx_runtime.jsxs)("div", {
+								className: Rows_module_css_default.sessionRow,
+								style: { position: "relative" },
+								children: [
+									(0, react_jsx_runtime.jsx)("span", {
+										className: Rows_module_css_default.slot,
+										children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCodeOutline16, {})
+									}),
+									(0, react_jsx_runtime.jsx)("span", {
+										className: Rows_module_css_default.title,
+										children: file.name
+									}),
+									(0, react_jsx_runtime.jsx)("button", {
+										type: "button",
+										className: Rows_module_css_default.rootClose,
+										style: { display: "inline-flex" },
+										"aria-label": t("files.remove"),
+										title: t("files.remove"),
+										onClick: (e) => {
+											e.stopPropagation();
+											if (foldersWorkspace !== void 0) removeWorkspaceFile(foldersWorkspace.workspaceId, file.id);
+										},
+										children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, { size: 14 })
+									})
+								]
+							}, "folders-modal-file-" + file.id))),
 							foldersWorkspace !== void 0 && foldersWorkspace.additionalPaths.length === 0 && (0, react_jsx_runtime.jsx)("div", {
 								className: WorkspacePicker_module_css_default.menuStatus,
 								children: t("folders.none")
@@ -3033,34 +3482,43 @@ window.__ModuleLoader__.load({
 						]
 					}),
 					(0, react_jsx_runtime.jsx)(react_jsx_runtime.Fragment, {
-						children: renderSlot("sidebar.workspaces.directoryFlow", {
-							open: foldersFlowOpen,
-							busy: foldersBusy,
-							onPicked: (path) => {
-								setFoldersFlowOpen(false);
-								const replaceTarget = foldersReplace;
-								setFoldersReplace(null);
-								const target = replaceTarget !== null ? workspaces.find((workspace) => workspace.workspaceId === replaceTarget.workspaceId) : foldersWorkspace;
-								if (target === void 0) return;
-								if (replaceTarget !== null) {
-									const without = (target.additionalPaths ?? []).filter((candidate) => candidate !== replaceTarget.path);
-									if (without.includes(path) || target.path === path) return;
-									applyFolders(replaceTarget.workspaceId, [...without, path]);
-									return;
+						children: pickOpen ? (0, react_jsx_runtime.jsx)(MultiPickBrowser, {
+						open: pickOpen,
+						listDirectory,
+						t,
+						onClose: () => {
+							setPickOpen(false);
+							setPickTarget(null);
+						},
+						onPicked: (picked) => {
+							setPickOpen(false);
+							setPickTarget(null);
+							const target = workspaces.find((workspace) => workspace.workspaceId === pickTarget);
+							if (target === void 0) return;
+							const directories = picked.directories;
+							const files = picked.files;
+							const run = async () => {
+								setFoldersBusy(true);
+								setFoldersError(null);
+								try {
+									if (directories.length > 0) {
+										const existing = new Set([target.path, ...(target.additionalPaths ?? [])]);
+										await setAdditionalPaths(target.workspaceId, [...(target.additionalPaths ?? []), ...directories.filter((candidate) => !existing.has(candidate))]);
+									}
+									if (files.length > 0) {
+										const existingPaths = new Set((target.files ?? []).map((file) => file.path).filter((candidate) => candidate !== void 0));
+										const entries = files.filter((file) => !existingPaths.has(file.path)).map((file) => ({ path: file.path, name: file.name, size: 0 }));
+										if (entries.length > 0) await addWorkspaceFiles(target.workspaceId, entries);
+									}
+								} catch (error) {
+									setFoldersError(error instanceof Error ? error.message : String(error));
+								} finally {
+									setFoldersBusy(false);
 								}
-								const existing = new Set([target.path, ...(target.additionalPaths ?? [])]);
-								if (existing.has(path)) return;
-								applyFolders(target.workspaceId, [...(target.additionalPaths ?? []), path]);
-							},
-							onCancel: () => {
-								setFoldersFlowOpen(false);
-								setFoldersReplace(null);
-							},
-							onError: (message) => {
-								setFoldersFlowOpen(false);
-								setFoldersError(message);
-							}
-						})
+							};
+							run().catch(() => {});
+						}
+					}) : null
 					}),
 					(0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
 						open: sessionRenameTarget !== null,
@@ -3246,7 +3704,7 @@ window.__ModuleLoader__.load({
 			"time.months": "{n}个月",
 			"time.years": "{n}年",
 			"time.ago": "{t}前",
-			"menu.manageFolders": "管理文件夹",
+			"menu.manageFolders": "管理文件夹", "files.section": "文件", "files.empty": "暂无文件。通过“添加工作区”多选文件，或直接粘贴文件到会话，都会出现在这里。", "files.remove": "移除该文件", "files.sessionSection": "会话文件", "files.count": "{n} 个文件", "files.toggle": "隐藏/显示该会话的文件", "folders.section": "文件夹区", "files.section": "文件区", "section.add": "添加文件夹/文件", "pick.title": "选择文件夹和文件", "pick.confirm": "选择 {n} 项", "pick.none": "可多选文件夹和文件", "pick.up": "返回上一级",
 			"folders.title": "工作区文件夹",
 			"folders.add": "添加文件夹",
 			"folders.primary": "主目录",
@@ -3338,7 +3796,7 @@ window.__ModuleLoader__.load({
 			"time.months": "{n}mo",
 			"time.years": "{n}y",
 			"time.ago": "{t} ago",
-			"menu.manageFolders": "Manage folders",
+			"menu.manageFolders": "Manage folders", "files.section": "Files", "files.empty": "No files yet. Files picked with “Add workspace”, or pasted into a session, will appear here.", "files.remove": "Remove this file", "files.sessionSection": "Session files", "files.count": "{n} files", "files.toggle": "Hide or show this session's files", "folders.section": "Folder area", "files.section": "File area", "section.add": "Add folders/files", "pick.title": "Pick folders and files", "pick.confirm": "Pick {n} items", "pick.none": "You can select multiple folders and files", "pick.up": "Up one level",
 			"folders.title": "Workspace folders",
 			"folders.add": "Add folder",
 			"folders.primary": "Primary",
@@ -3438,6 +3896,15 @@ window.__ModuleLoader__.load({
 				},
 				setAdditionalPaths: async (workspaceId, additionalPaths) => {
 					await ctx.workspaces.setAdditionalPaths(workspaceId, additionalPaths);
+				},
+				addWorkspaceFiles: async (workspaceId, entries) => {
+					await ctx.workspaces.addFiles(workspaceId, entries);
+				},
+				removeWorkspaceFile: async (workspaceId, fileId) => {
+					await ctx.workspaces.removeFile(workspaceId, fileId);
+				},
+				importWorkspaceFiles: async (workspaceId, files) => {
+					return await ctx.workspaces.importFiles(workspaceId, files);
 				},
 				listDirectory: (path, signal) => ctx.workspaces.listDirectory(path, signal, true),
 				readFile: (path) => ctx.workspaces.readFile(path),

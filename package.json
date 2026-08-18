@@ -1,6 +1,6 @@
 {
   "name": "dsh-workspace-enhance",
-  "description": "DeepSeek Harness workspace & session enhancement plugin: recycle bin, cross-workspace session drag, ungrouped sessions, multi-folder workspace roots, in-app directory picker, session merge — shipped as an overlay patch-set with install scripts",
+  "description": "DeepSeek Harness workspace & session enhancement plugin: recycle bin, cross-workspace session drag, ungrouped sessions, multi-folder workspace roots, in-app directory picker, session merge, folder/file sections, multi-select picker, session files & drag-drop upload, file preview — shipped as an overlay patch-set with install scripts",
   "version": "1.0.0",
   "publishConfig": {
     "access": "public"

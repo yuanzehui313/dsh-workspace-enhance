@@ -5519,6 +5519,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		* is re-exported here as the domain-local name.
 		*/
 		/** WorkspaceView row of every workspace.* response. */
+		const workspaceFileSchema = object({
+			id: string(),
+			path: string().optional(),
+			sessionId: string().optional(),
+			name: string(),
+			size: number().int().nonnegative()
+		});
 		const workspaceViewSchema = object({
 			workspaceId: workspaceIdSchema,
 			path: string(),
@@ -5526,7 +5533,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			sessionIds: array(sessionIdSchema),
 			createdAt: string(),
 			updatedAt: string(),
-			additionalPaths: array(string())
+			additionalPaths: array(string()),
+			files: array(workspaceFileSchema)
 		});
 		object({});
 		/** workspace.list response value. */
@@ -5579,7 +5587,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		/** workspace.moveSession response value: the target workspace view, or null when ungrouped. */
 		const workspaceMoveSessionValueSchema = object({ workspace: workspaceViewSchema.nullable() });
 		/** workspace.setAdditionalPaths response value. */
-		const workspaceSetAdditionalPathsValueSchema = object({ workspace: workspaceViewSchema });
+		const workspaceSetAdditionalPathsValueSchema = object({ workspace: workspaceViewSchema }); /** workspace.addFiles response value. */ const workspaceAddFilesValueSchema = object({ workspace: workspaceViewSchema }); /** workspace.removeFile response value. */ const workspaceRemoveFileValueSchema = object({ workspace: workspaceViewSchema });
+		/** workspace.importFiles response value. */ const workspaceImportFilesValueSchema = object({ workspace: workspaceViewSchema, imported: array(object({ path: string(), name: string(), size: number().int().nonnegative() })) });
 		//#endregion
 		//#region ../../host/apiproxy/lib/types/api/events.schema.js
 		/**
@@ -5789,7 +5798,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			size: number(),
 			binary: boolean(),
 			content: string(),
-			truncated: boolean()
+			truncated: boolean(),
+			data: string().optional()
 		});
 		//#endregion
 		//#region ../../host/apiproxy/lib/types/api/skills.schema.js
@@ -6148,7 +6158,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			"host.readFile": hostReadFileValueSchema,
 			"workspace.list": workspaceListValueSchema,
 			"workspace.create": workspaceCreateValueSchema,
-			"workspace.setAdditionalPaths": workspaceSetAdditionalPathsValueSchema,
+			"workspace.setAdditionalPaths": workspaceSetAdditionalPathsValueSchema, "workspace.addFiles": workspaceAddFilesValueSchema, "workspace.removeFile": workspaceRemoveFileValueSchema, "workspace.importFiles": workspaceImportFilesValueSchema,
 			"workspace.rename": workspaceRenameValueSchema,
 			"workspace.delete": workspaceDeleteValueSchema,
 			"workspace.insertBefore": workspaceInsertBeforeValueSchema,
@@ -6377,7 +6387,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			workspace = {
 				list: (payload, signal) => this.callUnary("workspace.list", payload, signal),
 				create: (payload, signal) => this.callUnary("workspace.create", payload, signal),
-				setAdditionalPaths: (payload, signal) => this.callUnary("workspace.setAdditionalPaths", payload, signal),
+				setAdditionalPaths: (payload, signal) => this.callUnary("workspace.setAdditionalPaths", payload, signal), addFiles: (payload, signal) => this.callUnary("workspace.addFiles", payload, signal), removeFile: (payload, signal) => this.callUnary("workspace.removeFile", payload, signal), importFiles: (payload, signal) => this.callUnary("workspace.importFiles", payload, signal),
 				rename: (payload, signal) => this.callUnary("workspace.rename", payload, signal),
 				delete: (payload, signal) => this.callUnary("workspace.delete", payload, signal),
 				insertBefore: (payload, signal) => this.callUnary("workspace.insertBefore", payload, signal),
@@ -9459,7 +9469,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 								sessionIds: [],
 								createdAt: now,
 								updatedAt: now,
-								additionalPaths: []
+								additionalPaths: [],
+								files: []
 							};
 							workspaces.unshift(created);
 							emitHost({
@@ -9486,6 +9497,52 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 								workspace: { ...workspace }
 							});
 							return ok(request, { workspace: { ...workspace } });
+						},
+						addFiles: (request) => {
+							const { workspaceId, entries } = request.payload;
+							const workspace = workspaces.find((w) => w.workspaceId === workspaceId);
+							if (workspace === void 0) return err(request, { code: "workspace-not-found", message: `no workspace ${workspaceId}`, details: { workspaceId } });
+							const list = Array.isArray(workspace.files) ? workspace.files : [];
+							for (const entry of entries) {
+								const name = typeof entry.name === "string" && entry.name !== "" ? entry.name : "untitled";
+								const size = typeof entry.size === "number" && Number.isFinite(entry.size) ? Math.max(0, Math.floor(entry.size)) : 0;
+								const path = typeof entry.path === "string" && entry.path !== "" ? entry.path : void 0;
+								const sessionId = typeof entry.sessionId === "string" && entry.sessionId !== "" ? entry.sessionId : void 0;
+								const key = path !== void 0 ? "p:" + path : "s:" + (sessionId ?? "") + ":" + name + ":" + size;
+								if (list.some((e) => (e.path !== void 0 ? "p:" + e.path : "s:" + (e.sessionId ?? "") + ":" + e.name + ":" + e.size) === key)) continue;
+								list.push({ id: crypto.randomUUID(), name, size, ...path !== void 0 ? { path } : {}, ...sessionId !== void 0 ? { sessionId } : {} });
+							}
+							workspace.files = list;
+							workspace.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+							emitHost({ type: "host/workspace-changed", workspace: { ...workspace } });
+							return ok(request, { workspace: { ...workspace } });
+						},
+						removeFile: (request) => {
+							const { workspaceId, fileId } = request.payload;
+							const workspace = workspaces.find((w) => w.workspaceId === workspaceId);
+							if (workspace === void 0) return err(request, { code: "workspace-not-found", message: `no workspace ${workspaceId}`, details: { workspaceId } });
+							workspace.files = (Array.isArray(workspace.files) ? workspace.files : []).filter((e) => e.id !== fileId);
+							workspace.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+							emitHost({ type: "host/workspace-changed", workspace: { ...workspace } });
+							return ok(request, { workspace: { ...workspace } });
+						},
+						importFiles: (request) => {
+							const { workspaceId, files } = request.payload;
+							const workspace = workspaces.find((w) => w.workspaceId === workspaceId);
+							if (workspace === void 0) return err(request, { code: "workspace-not-found", message: `no workspace ${workspaceId}`, details: { workspaceId } });
+							const list = Array.isArray(workspace.files) ? workspace.files : [];
+							const imported = [];
+							for (const entry of files) {
+								const name = typeof entry.name === "string" && entry.name !== "" ? entry.name : "upload.bin";
+								const size = typeof entry.data === "string" ? Math.floor(entry.data.length * 3 / 4) : 0;
+								const path = workspace.path + "/.dsh-uploads/" + name;
+								list.push({ id: crypto.randomUUID(), name, size, path });
+								imported.push({ path, name, size });
+							}
+							workspace.files = list;
+							workspace.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+							emitHost({ type: "host/workspace-changed", workspace: { ...workspace } });
+							return ok(request, { workspace: { ...workspace }, imported });
 						},
 						rename: (request) => {
 							const { workspaceId, title } = request.payload;
@@ -10008,7 +10065,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					case "host.openPath": return this.api.host.openPath(request, new AbortController().signal);
 					case "workspace.list": return this.api.workspace.list(request);
 					case "workspace.create": return this.api.workspace.create(request);
-					case "workspace.setAdditionalPaths": return this.api.workspace.setAdditionalPaths(request);
+					case "workspace.setAdditionalPaths": return this.api.workspace.setAdditionalPaths(request); case "workspace.addFiles": return this.api.workspace.addFiles(request); case "workspace.removeFile": return this.api.workspace.removeFile(request); case "workspace.importFiles": return this.api.workspace.importFiles(request);
 					case "workspace.rename": return this.api.workspace.rename(request);
 					case "workspace.delete": return this.api.workspace.delete(request);
 					case "workspace.insertBefore": return this.api.workspace.insertBefore(request);

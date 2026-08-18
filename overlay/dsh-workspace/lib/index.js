@@ -78,6 +78,10 @@ var WorkspaceEntity = class {
 	get additionalPaths() {
 		return this.record.additionalPaths ?? [];
 	}
+	/** All workspace-file entries (public or session-mounted), in insertion order. */
+	get files() {
+		return this.record.files ?? [];
+	}
 	/** Every writable root of this workspace: the primary path first, then each additional path. */
 	get paths() {
 		return [this.record.path, ...this.additionalPaths];
@@ -121,7 +125,8 @@ var WorkspaceEntity = class {
 			additionalPaths
 		});
 	}
-	async attachSession(sessionId) {
+	/** * Append workspace-file entries (public files or per-session pasted files). * Entries dedupe by stable key: path for public files, sessionId+name+size * for session files. * @param entries - file descriptors without ids (ids are minted here). */ async addFiles(entries) { const list = Array.isArray(this.record.files) ? this.record.files : []; const next = [...list]; for (const entry of entries) { const name = typeof entry.name === "string" && entry.name !== "" ? entry.name : "untitled"; const size = typeof entry.size === "number" && Number.isFinite(entry.size) ? Math.max(0, Math.floor(entry.size)) : 0; const path = typeof entry.path === "string" && entry.path !== "" ? entry.path : void 0; const sessionId = typeof entry.sessionId === "string" && entry.sessionId !== "" ? entry.sessionId : void 0; const key = path !== void 0 ? "p:" + path : "s:" + (sessionId ?? "") + ":" + name + ":" + size; if (next.some((e) => (e.path !== void 0 ? "p:" + e.path : "s:" + (e.sessionId ?? "") + ":" + e.name + ":" + e.size) === key)) continue; next.push({ id: crypto.randomUUID(), name, size, ...path !== void 0 ? { path } : {}, ...sessionId !== void 0 ? { sessionId } : {} }); } if (next.length > 200) next.splice(0, next.length - 200); await this.mutate((record) => { const current = Array.isArray(record.files) ? record.files : []; if (current.length === next.length && current.every((e, i) => e.id === next[i].id)) return record; return { ...record, files: next }; }); } /** Remove one workspace-file entry by id. */ async removeFile(fileId) { await this.mutate((record) => { const current = Array.isArray(record.files) ? record.files : []; if (!current.some((e) => e.id === fileId)) return record; return { ...record, files: current.filter((e) => e.id !== fileId) }; }); }
+async attachSession(sessionId) {
 		if (!this.record.sessionIds.includes(sessionId)) {
 			const header = await this.host.readSessionHeader(sessionId);
 			if (header.cwd === void 0) throw new Error(`cannot attach session '${sessionId}' to workspace '${this.record.path}': its stored header carries no cwd to validate against`);
@@ -222,13 +227,21 @@ const workspaceId = z.string().transform((value) => value);
 * stamped at create; `sessionIds` is the ordered ownership account (array
 * order is display order); timestamps are ISO-8601 strings.
 */
+const workspaceFile = z.object({
+	id: z.string(),
+	path: z.string().optional(),
+	sessionId: z.string().optional(),
+	name: z.string(),
+	size: z.number().int().nonnegative()
+});
 const workspaceRecord = z.object({
 	path: z.string(),
 	title: z.string(),
 	sessionIds: z.array(z.string().transform(SessionId)),
 	createdAt: z.string(),
 	updatedAt: z.string(),
-	additionalPaths: z.array(z.string()).default([])
+	additionalPaths: z.array(z.string()).default([]),
+	files: z.array(workspaceFile).default([])
 });
 /**
 * Recoverable two-write mutation marker. The marker is persisted before the

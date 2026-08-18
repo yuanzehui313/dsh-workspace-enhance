@@ -28,8 +28,10 @@ one-command install / rollback / verify scripts.
    archive = archive all fork children and keep the source.
 8. **Session row icons**: fork / archive / delete icons with fork-tree
    rendering; rename moved out of the ⋯ menu (menu removed).
-9. **Workspace row icons**: merge / rename / new session / manage folders /
-   delete as direct buttons; the merge action uses a distinct link icon.
+9. **Workspace row icons**: merge / rename / new session / delete as direct
+   buttons; the merge action uses a distinct link icon. (The “manage folders”
+   icon was removed — its entry point is now the + button on the folder/file
+   area headers.)
 10. **Recycle-bin styling**: a workspace-level group row (trash icon, bold
     brand-blue title, expanded by default, click to collapse, items aligned
     with the title).
@@ -43,6 +45,34 @@ one-command install / rollback / verify scripts.
     binary files refused).
 12. **Fixes**: recycle-bin RPC envelope unwrap bug, server default cwd being a
     drive root (`C:\`) which broke ungrouped session creation, and more.
+13. **Folder area / file area sections**: each workspace group renders two
+    distinct sections — the folder area (blue tint; primary folder + all
+    additional folders, primary not removable) on top and the file area
+    (purple tint; public files or an empty hint) below; both headers collapse
+    on click and keep their place when empty; the Ungrouped section renders
+    neither.
+14. **Multi-select file/folder picker**: the + button on either section header
+    opens the in-app multi-select browser (drive-level entry, folders navigate,
+    checkboxes multi-select across directories, 320px scrolling list); confirm
+    routes folders into the folder area and files into the file area; cancel
+    returns straight to the page.
+15. **Session files**: files pasted (Ctrl+V) into a conversation are uploaded
+    through `workspace.importFiles` into the workspace's `.dsh-uploads/` and
+    mounted above the owning session row (green block with a left accent bar;
+    header shows "Session files · N files · session title"); the block
+    collapses on click, file rows have an always-visible × and click-to-preview.
+16. **Unrestricted attachments**: any file format can be pasted/dropped as an
+    attachment (the four image types still ride the image pipeline); binary
+    sends only a `[附件 name]` marker; chips show an extension badge + file
+    name; size caps apply only to content-bearing images and text.
+17. **Drag-drop upload**: drop files onto the file area (dashed highlight) —
+    they are persisted via `workspace.importFiles` to `.dsh-uploads/`
+    (auto-numbered on collision, ≤5MB each) and listed immediately; click a
+    file row to preview.
+18. **Preview upgrade**: public/session file rows and folder-tree files all
+    open the preview panel; `host.readFile` returns base64 for binary files and
+    the panel renders png/jpg/jpeg/gif/webp/svg images inline; Markdown and
+    30+ code languages as before.
 
 ## Installation
 

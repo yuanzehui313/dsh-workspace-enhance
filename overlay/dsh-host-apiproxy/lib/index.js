@@ -1,8 +1,8 @@
 import { Service } from "@deepseek-ai/cordis";
 import z from "@deepseek-ai/schemastery";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, stat } from "node:fs/promises";
-import { dirname, extname, parse, resolve, sep } from "node:path";
+import { access, mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { basename, dirname, extname, join, parse, resolve, sep } from "node:path";
 import { installModelSelection } from "@deepseek-ai/dsh-agent";
 import { AttachmentError } from "@deepseek-ai/dsh-attachment";
 import { ReasoningEffortId, contentHasImage, createUserMessage, errorChain, freezeMessage } from "@deepseek-ai/dsh-llm";
@@ -1701,7 +1701,8 @@ function workspaceView(workspace) {
 		sessionIds: [...workspace.sessionIds],
 		createdAt: workspace.createdAt,
 		updatedAt: workspace.updatedAt,
-		additionalPaths: [...(workspace.additionalPaths ?? [])]
+		additionalPaths: [...(workspace.additionalPaths ?? [])],
+		files: (workspace.files ?? []).map((file) => ({ ...file }))
 	};
 }
 /** Wire projection of the durable record carried by `domain/changed`. */
@@ -1714,7 +1715,8 @@ function changedWorkspaceView(workspaceId, value) {
 		sessionIds: [...record.sessionIds],
 		createdAt: record.createdAt,
 		updatedAt: record.updatedAt,
-		additionalPaths: [...(record.additionalPaths ?? [])]
+		additionalPaths: [...(record.additionalPaths ?? [])],
+		files: (record.files ?? []).map((file) => ({ ...file }))
 	};
 }
 /**
@@ -3358,6 +3360,82 @@ function createApiProxy(ctx, defaults) {
 					});
 				}
 			},
+			async addFiles(request) {
+				const { payload } = request;
+				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
+				if (workspace === void 0) return workspaceNotFound(request, payload.workspaceId);
+				try {
+					const operation = workspaceCreationChain.then(() => workspace.addFiles(payload.entries));
+					workspaceCreationChain = operation.then(() => void 0, () => void 0);
+					await operation;
+					return ok(request, { workspace: workspaceView(workspace) });
+				} catch (error) {
+					return err(request, {
+						code: "workspace-invalid-file",
+						message: `cannot add files to workspace "${payload.workspaceId}": ${error instanceof Error ? error.message : String(error)}`,
+						details: { workspaceId: payload.workspaceId }
+					});
+				}
+			},
+			async removeFile(request) {
+				const { payload } = request;
+				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
+				if (workspace === void 0) return workspaceNotFound(request, payload.workspaceId);
+				try {
+					const operation = workspaceCreationChain.then(() => workspace.removeFile(payload.fileId));
+					workspaceCreationChain = operation.then(() => void 0, () => void 0);
+					await operation;
+					return ok(request, { workspace: workspaceView(workspace) });
+				} catch (error) {
+					return err(request, {
+						code: "workspace-invalid-file",
+						message: `cannot remove file from workspace "${payload.workspaceId}": ${error instanceof Error ? error.message : String(error)}`,
+						details: { workspaceId: payload.workspaceId }
+					});
+				}
+			},
+			/** Persist uploaded file bytes under the workspace's .dsh-uploads directory and mount them as public files. */
+			async importFiles(request) {
+				const { payload } = request;
+				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
+				if (workspace === void 0) return workspaceNotFound(request, payload.workspaceId);
+				try {
+					const operation = workspaceCreationChain.then(async () => {
+						const dir = join(workspace.path, ".dsh-uploads");
+						await mkdir(dir, { recursive: true });
+						const imported = [];
+						const mounted = [];
+						for (const entry of payload.files) {
+							const buffer = Buffer.from(entry.data, "base64");
+							const safeName = (basename(entry.name).replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_").slice(0, 120) || "upload.bin").trim() || "upload.bin";
+							let target = join(dir, safeName);
+							let counter = 1;
+							for (;;) {
+								try {
+									await access(target);
+								} catch {
+									break;
+								}
+								const dot = safeName.lastIndexOf(".");
+								target = join(dir, dot > 0 ? safeName.slice(0, dot) + " (" + counter++ + ")" + safeName.slice(dot) : safeName + " (" + counter++ + ")");
+							}
+							await writeFile(target, buffer);
+							imported.push({ path: target, name: basename(target), size: buffer.length });
+							mounted.push({ path: target, name: basename(target), size: buffer.length, ...entry.sessionId !== void 0 && entry.sessionId !== "" ? { sessionId: entry.sessionId } : {} });
+						}
+						if (mounted.length > 0) await workspace.addFiles(mounted);
+						return ok(request, { workspace: workspaceView(workspace), imported });
+					});
+					workspaceCreationChain = operation.then(() => void 0, () => void 0);
+					return await operation;
+				} catch (error) {
+					return err(request, {
+						code: "workspace-invalid-file",
+						message: `cannot import files into workspace "${payload.workspaceId}": ${error instanceof Error ? error.message : String(error)}`,
+						details: { workspaceId: payload.workspaceId }
+					});
+				}
+			},
 			async rename(request) {
 				const { payload } = request;
 				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
@@ -3603,7 +3681,8 @@ function createApiProxy(ctx, defaults) {
 						size: info.size,
 						binary,
 						content: binary ? "" : buffer.toString("utf8"),
-						truncated
+						truncated,
+						...binary ? { data: buffer.toString("base64") } : {}
 					});
 				} catch (error) {
 					return err(request, {
@@ -4612,6 +4691,15 @@ const hostReadFileRequestSchema = z$1.object({
 	path: z$1.string().min(1),
 	maxBytes: z$1.number().int().positive().optional()
 });
+/** host.readFile response value: base64 data accompanies binary content for inline preview. */
+const hostReadFileValueSchema = z$1.object({
+	path: z$1.string(),
+	size: z$1.number().int().nonnegative(),
+	binary: z$1.boolean(),
+	content: z$1.string(),
+	truncated: z$1.boolean(),
+	data: z$1.string().optional()
+});
 //#endregion
 //#region lib/types/api/workspace.schema.js
 /**
@@ -4620,6 +4708,7 @@ const hostReadFileRequestSchema = z$1.object({
 * is re-exported here as the domain-local name.
 */
 /** WorkspaceView row of every workspace.* response. */
+const workspaceFileSchema = z$1.object({ id: z$1.string(), path: z$1.string().optional(), sessionId: z$1.string().optional(), name: z$1.string(), size: z$1.number().int().nonnegative() });
 const workspaceViewSchema = z$1.object({
 	workspaceId: workspaceIdSchema,
 	path: z$1.string(),
@@ -4627,7 +4716,8 @@ const workspaceViewSchema = z$1.object({
 	sessionIds: z$1.array(sessionIdSchema),
 	createdAt: z$1.string(),
 	updatedAt: z$1.string(),
-	additionalPaths: z$1.array(z$1.string())
+	additionalPaths: z$1.array(z$1.string()),
+	files: z$1.array(workspaceFileSchema)
 });
 /** workspace.list request payload (empty object literal). */
 const workspaceListRequestSchema = z$1.object({});
@@ -4673,6 +4763,7 @@ const workspaceInsertSessionBeforeRequestSchema = z$1.object({
 /** workspace.insertSessionBefore response value. */
 const workspaceInsertSessionBeforeValueSchema = z$1.object({ workspace: workspaceViewSchema });
 /** workspace.setAdditionalPaths request payload: the workspace plus its complete additional root list. */
+const workspaceAddFilesRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, entries: z$1.array(z$1.object({ path: z$1.string().optional(), sessionId: z$1.string().optional(), name: z$1.string(), size: z$1.number().int().nonnegative() })) }); const workspaceAddFilesValueSchema = z$1.object({ workspace: workspaceViewSchema }); const workspaceRemoveFileRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, fileId: z$1.string() }); const workspaceRemoveFileValueSchema = z$1.object({ workspace: workspaceViewSchema }); const workspaceImportFilesRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, files: z$1.array(z$1.object({ name: z$1.string(), data: z$1.string(), sessionId: z$1.string().optional() })) }); const workspaceImportFilesValueSchema = z$1.object({ workspace: workspaceViewSchema, imported: z$1.array(z$1.object({ path: z$1.string(), name: z$1.string(), size: z$1.number().int().nonnegative() })) });
 const workspaceSetAdditionalPathsRequestSchema = z$1.object({
 	workspaceId: workspaceIdSchema,
 	additionalPaths: z$1.array(z$1.string())
@@ -5181,6 +5272,18 @@ const UNARY_ROUTES = {
 	"workspace.setAdditionalPaths": {
 		schema: workspaceSetAdditionalPathsRequestSchema,
 		invoke: (api, r) => api.workspace.setAdditionalPaths(r)
+	},
+	"workspace.addFiles": {
+		schema: workspaceAddFilesRequestSchema,
+		invoke: (api, r) => api.workspace.addFiles(r)
+	},
+	"workspace.removeFile": {
+		schema: workspaceRemoveFileRequestSchema,
+		invoke: (api, r) => api.workspace.removeFile(r)
+	},
+	"workspace.importFiles": {
+		schema: workspaceImportFilesRequestSchema,
+		invoke: (api, r) => api.workspace.importFiles(r)
 	},
 	"workspace.rename": {
 		schema: workspaceRenameRequestSchema,

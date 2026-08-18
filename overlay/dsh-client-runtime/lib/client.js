@@ -9705,6 +9705,33 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				if (result.ok) this.upsert(result.value.workspace);
 				return result;
 			}
+			/** Append workspace-file entries and update the local projection. */
+			async addFiles(workspaceId, entries) {
+				const { result } = await this.api.workspace.addFiles({
+					workspaceId,
+					entries
+				});
+				if (result.ok) this.upsert(result.value.workspace);
+				return result;
+			}
+			/** Remove one workspace-file entry and update the local projection. */
+			async removeFile(workspaceId, fileId) {
+				const { result } = await this.api.workspace.removeFile({
+					workspaceId,
+					fileId
+				});
+				if (result.ok) this.upsert(result.value.workspace);
+				return result;
+			}
+			/** Upload file bytes into the workspace's .dsh-uploads directory and mount them as public files. */
+			async importFiles(workspaceId, files) {
+				const { result } = await this.api.workspace.importFiles({
+					workspaceId,
+					files
+				});
+				if (result.ok) this.upsert(result.value.workspace);
+				return result;
+			}
 			/**
 			* Delete a Workspace registration and remove its local projection from the
 			* unary response without waiting for the Host frame.
@@ -10236,6 +10263,24 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			async setAdditionalPaths(workspaceId, additionalPaths) {
 				const result = await this.manager.setAdditionalPaths(workspaceId, additionalPaths);
 				if (!result.ok) throw new Error(`workspace folders update failed: ${result.error.code}: ${result.error.message}`);
+				return result.value.workspace;
+			}
+			/** Append workspace-file entries through the wire manager. */
+			async addFiles(workspaceId, entries) {
+				const result = await this.manager.addFiles(workspaceId, entries);
+				if (!result.ok) throw new Error(`workspace files update failed: ${result.error.code}: ${result.error.message}`);
+				return result.value.workspace;
+			}
+			/** Remove one workspace-file entry through the wire manager. */
+			async removeFile(workspaceId, fileId) {
+				const result = await this.manager.removeFile(workspaceId, fileId);
+				if (!result.ok) throw new Error(`workspace file remove failed: ${result.error.code}: ${result.error.message}`);
+				return result.value.workspace;
+			}
+			/** Upload file bytes into the workspace's .dsh-uploads directory through the wire manager. */
+			async importFiles(workspaceId, files) {
+				const result = await this.manager.importFiles(workspaceId, files);
+				if (!result.ok) throw new Error(`workspace files import failed: ${result.error.code}: ${result.error.message}`);
 				return result.value.workspace;
 			}
 			/**
