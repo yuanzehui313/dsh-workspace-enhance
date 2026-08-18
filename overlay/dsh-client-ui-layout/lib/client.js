@@ -275,7 +275,7 @@ window.__ModuleLoader__.load({
 		* @returns the store handle (spec + type + identity + factory in one).
 		*/
 		/** Persisted panel widths survive reloads (localStorage; sidebar only for now). */
-		const LAYOUT_STORAGE_KEY = "dsh-layout.panels";
+		const LAYOUT_STORAGE_KEY = "dsh-layout.panels.v2";
 		function readPersistedPanels() {
 			try {
 				if (typeof window === "undefined" || typeof window.localStorage === "undefined") return null;
@@ -298,7 +298,7 @@ window.__ModuleLoader__.load({
 			return (0, _deepseek_ai_dsh_client_runtime_client.defineStore)({
 				init: () => {
 					const persisted = readPersistedPanels();
-					const remembered = persisted === null || typeof persisted.sidebar !== "number" ? 280 : persisted.sidebar;
+					const remembered = persisted === null || typeof persisted.sidebar !== "number" ? 420 : persisted.sidebar;
 					return {
 						sidebar: clampWidth(remembered, 264, 420),
 						details: 0,
@@ -318,7 +318,7 @@ window.__ModuleLoader__.load({
 						if (d.narrow) d.narrowExpanded = !d.narrowExpanded;
 						else if (d.sidebar === 0) {
 							const persisted = readPersistedPanels();
-							d.sidebar = clampWidth(persisted === null || typeof persisted.sidebar !== "number" ? 280 : persisted.sidebar, 264, 420);
+							d.sidebar = clampWidth(persisted === null || typeof persisted.sidebar !== "number" ? 420 : persisted.sidebar, 264, 420);
 							writePersistedPanels(d);
 						} else {
 							d.sidebar = 0;
