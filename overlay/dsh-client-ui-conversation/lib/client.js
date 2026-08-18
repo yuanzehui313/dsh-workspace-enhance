@@ -3424,6 +3424,7 @@ window.__ModuleLoader__.load({
 			]);
 			const inputRef = (0, react.useRef)(null);
 			const cardRef = (0, react.useRef)(null);
+			const dragRootRef = (0, react.useRef)(null);
 			const dragDepthRef = (0, react.useRef)(0);
 			const scrollRef = (0, react.useRef)(null);
 			const mirrorRef = (0, react.useRef)(null);
@@ -3668,16 +3669,18 @@ window.__ModuleLoader__.load({
 					if (!canAcceptDrop) return;
 					intakeImages([...event.dataTransfer?.files ?? []]);
 				};
-				document.addEventListener("dragenter", onDragEnter);
-				document.addEventListener("dragover", onDragOver);
-				document.addEventListener("dragleave", onDragLeave);
-				document.addEventListener("drop", onDrop);
+				const root = dragRootRef.current;
+				if (root === null) return;
+				root.addEventListener("dragenter", onDragEnter);
+				root.addEventListener("dragover", onDragOver);
+				root.addEventListener("dragleave", onDragLeave);
+				root.addEventListener("drop", onDrop);
 				window.addEventListener("dragend", reset);
 				return () => {
-					document.removeEventListener("dragenter", onDragEnter);
-					document.removeEventListener("dragover", onDragOver);
-					document.removeEventListener("dragleave", onDragLeave);
-					document.removeEventListener("drop", onDrop);
+					root.removeEventListener("dragenter", onDragEnter);
+					root.removeEventListener("dragover", onDragOver);
+					root.removeEventListener("dragleave", onDragLeave);
+					root.removeEventListener("drop", onDrop);
 					window.removeEventListener("dragend", reset);
 				};
 			}, [canAcceptDrop, intakeImages]);
@@ -3786,12 +3789,25 @@ window.__ModuleLoader__.load({
 			}
 			return (0, react_jsx_runtime.jsxs)("div", {
 				className: clsx(InputBar_module_css_default.root, variant === "hero" && InputBar_module_css_default.hero),
+				ref: dragRootRef,
+				style: { position: "relative" },
 				children: [
-					dragActive && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_attachment.DropOverlay, {
-						disabled: !canAcceptDrop,
-						labels: dropOverlayLabels(t, canAcceptDrop, imageLimits === void 0 ? void 0 : {
-							count: imageLimits.maxImagesPerMessage,
-							size: imageSizeText(imageLimits.maxImageBytes)
+					dragActive && (0, react_jsx_runtime.jsx)("div", {
+						style: {
+							position: "absolute",
+							inset: 0,
+							zIndex: 20,
+							borderRadius: 14,
+							background: "var(--dsw-specific-input-major, rgba(28,31,38,0.96))",
+							border: "2px dashed var(--dsw-alias-state-brand-primary, #3b5bdb)",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							pointerEvents: "none"
+						},
+						children: (0, react_jsx_runtime.jsx)("span", {
+							style: { fontSize: 13, fontWeight: 600, color: "var(--dsw-alias-label-primary)" },
+							children: t("image.dropTitle")
 						})
 					}),
 					toast !== null && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Toast, {

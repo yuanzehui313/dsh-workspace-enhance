@@ -230,7 +230,7 @@ window.__ModuleLoader__.load({
 				const roots = merged ? holder.members.map((workspace) => {
 					const acting = holder.members.find((member) => member.workspaceId !== workspace.workspaceId && (member.additionalPaths ?? []).includes(workspace.path));
 					return rootRow(workspace.path, acting === void 0 ? workspace.workspaceId : acting.workspaceId, workspace.sessionIds, acting !== void 0);
-				}) : workspaceRoots(primary).map((path, index) => index === 0 ? rootRow(path, primary.workspaceId, [], false) : rootRow(path, primary.workspaceId, [], true));
+				}) : workspaceRoots(primary).slice(1).map((path) => rootRow(path, primary.workspaceId, [], true));
 				const label = merged ? holder.members.map((workspace) => workspace.title).join(" \u00b7 ") : primary.title;
 				groups.push(buildGroup(primary.workspaceId, primary.workspaceId, primary.path, Date.parse(primary.createdAt), label, members, "account", merged ? holder.members.map((workspace) => workspace.workspaceId) : void 0, roots, (primary.files ?? []).map((file) => ({ ...file }))));
 			}
@@ -1875,6 +1875,14 @@ window.__ModuleLoader__.load({
 												})
 											]
 										}, "folders-section-title"),
+										!foldersCollapsed && (group.roots ?? []).length === 0 && (0, react_jsx_runtime.jsx)("div", {
+											className: Rows_module_css_default.sessionRow,
+											style: { paddingLeft: 28, opacity: 0.7 },
+											children: (0, react_jsx_runtime.jsx)("span", {
+												className: Rows_module_css_default.title,
+												children: t("folders.none")
+											})
+										}, "folders-none-hint"),
 										!foldersCollapsed && (group.roots ?? []).map((root) => (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, {
 										children: [
 											(0, react_jsx_runtime.jsxs)("div", {
@@ -2028,7 +2036,11 @@ window.__ModuleLoader__.load({
 													children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, { size: 14 })
 												})
 											]
-										}, file.id))
+										}, file.id)),
+									(0, react_jsx_runtime.jsx)("div", {
+										style: { margin: "4px 8px 6px", border: "1px dashed rgba(167,139,250,0.45)", borderRadius: 6, padding: "8px 10px", fontSize: 12, color: "var(--dsw-alias-label-secondary)", textAlign: "center", minHeight: 34, display: "flex", alignItems: "center", justifyContent: "center" },
+										children: t("files.dropHint")
+									}, "files-drop-zone")
 									]
 								}, "files-section")
 							]
@@ -3704,11 +3716,11 @@ window.__ModuleLoader__.load({
 			"time.months": "{n}个月",
 			"time.years": "{n}年",
 			"time.ago": "{t}前",
-			"menu.manageFolders": "管理文件夹", "files.section": "文件", "files.empty": "暂无文件。通过“添加工作区”多选文件，或直接粘贴文件到会话，都会出现在这里。", "files.remove": "移除该文件", "files.sessionSection": "会话文件", "files.count": "{n} 个文件", "files.toggle": "隐藏/显示该会话的文件", "folders.section": "文件夹区", "files.section": "文件区", "section.add": "添加文件夹/文件", "pick.title": "选择文件夹和文件", "pick.confirm": "选择 {n} 项", "pick.none": "可多选文件夹和文件", "pick.up": "返回上一级",
+			"menu.manageFolders": "管理文件夹", "files.section": "文件", "files.empty": "暂无文件。通过“添加工作区”多选文件，或直接粘贴文件到会话，都会出现在这里。", "files.remove": "移除该文件", "files.sessionSection": "会话文件", "files.count": "{n} 个文件", "files.toggle": "隐藏/显示该会话的文件", "files.dropHint": "拖拽文件到此处，或点击 + 从磁盘选择", "folders.section": "文件夹区", "files.section": "文件区", "section.add": "添加文件夹/文件", "pick.title": "选择文件夹和文件", "pick.confirm": "选择 {n} 项", "pick.none": "可多选文件夹和文件", "pick.up": "返回上一级",
 			"folders.title": "工作区文件夹",
 			"folders.add": "添加文件夹",
 			"folders.primary": "主目录",
-			"folders.none": "还没有附加文件夹，点击“添加文件夹”把其它项目目录加入这个工作区。",
+			"folders.none": "还没有附加文件夹，点击右侧 + 添加。",
 			"folders.remove": "移除该文件夹",
 			"folders.reselect": "重新选择该文件夹",
 			"folders.done": "完成",
@@ -3796,11 +3808,11 @@ window.__ModuleLoader__.load({
 			"time.months": "{n}mo",
 			"time.years": "{n}y",
 			"time.ago": "{t} ago",
-			"menu.manageFolders": "Manage folders", "files.section": "Files", "files.empty": "No files yet. Files picked with “Add workspace”, or pasted into a session, will appear here.", "files.remove": "Remove this file", "files.sessionSection": "Session files", "files.count": "{n} files", "files.toggle": "Hide or show this session's files", "folders.section": "Folder area", "files.section": "File area", "section.add": "Add folders/files", "pick.title": "Pick folders and files", "pick.confirm": "Pick {n} items", "pick.none": "You can select multiple folders and files", "pick.up": "Up one level",
+			"menu.manageFolders": "Manage folders", "files.section": "Files", "files.empty": "No files yet. Files picked with “Add workspace”, or pasted into a session, will appear here.", "files.remove": "Remove this file", "files.sessionSection": "Session files", "files.count": "{n} files", "files.toggle": "Hide or show this session's files", "files.dropHint": "Drop files here, or click + to pick from disk", "folders.section": "Folder area", "files.section": "File area", "section.add": "Add folders/files", "pick.title": "Pick folders and files", "pick.confirm": "Pick {n} items", "pick.none": "You can select multiple folders and files", "pick.up": "Up one level",
 			"folders.title": "Workspace folders",
 			"folders.add": "Add folder",
 			"folders.primary": "Primary",
-			"folders.none": "No additional folders yet. Use “Add folder” to include other project directories in this workspace.",
+			"folders.none": "No extra folders yet — click + to add.",
 			"folders.remove": "Remove this folder",
 			"folders.reselect": "Re-select this folder",
 			"folders.done": "Done",
