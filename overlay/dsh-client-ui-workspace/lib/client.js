@@ -1999,14 +1999,6 @@ window.__ModuleLoader__.load({
 												})
 											]
 										}, "files-section-title"),
-										!filesCollapsed && (publicFiles.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
-											className: Rows_module_css_default.sessionRow,
-											style: { paddingLeft: 28, opacity: 0.7 },
-											children: (0, react_jsx_runtime.jsx)("span", {
-												className: Rows_module_css_default.title,
-												children: t("files.empty")
-											})
-										}, "files-empty") : null),
 										!filesCollapsed && publicFiles.map((file) => (0, react_jsx_runtime.jsxs)("div", {
 											className: Rows_module_css_default.sessionRow,
 											style: { paddingLeft: 28, position: "relative", cursor: file.path !== void 0 ? "pointer" : "default" },
