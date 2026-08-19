@@ -3,3 +3,6 @@ backup/
 *.log
 .idea/
 .vscode/
+
+# install 脚本临时目录，避免误提交
+.install.ps1.*.tmpdir/
