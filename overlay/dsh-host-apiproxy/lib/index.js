@@ -1,6 +1,7 @@
 import { Service } from "@deepseek-ai/cordis";
 import z from "@deepseek-ai/schemastery";
 import { randomUUID } from "node:crypto";
+import { execFile } from "node:child_process";
 import { access, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, parse, resolve, sep } from "node:path";
 import { installModelSelection } from "@deepseek-ai/dsh-agent";
@@ -3395,6 +3396,52 @@ function createApiProxy(ctx, defaults) {
 				}
 			},
 			/** Persist uploaded file bytes under the workspace's .dsh-uploads directory and mount them as public files. */
+			async gitInfo(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const repo = await isGitRepo(canonical);
+					if (!repo) return ok(request, { repo: false, branch: null, branches: [], dirty: false });
+					const branch = await gitBranch(canonical);
+					const branches = (await runGit(canonical, ["branch", "--format=%(refname:short)"])).split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+					const dirty = (await runGit(canonical, ["status", "--porcelain"])).trim().length > 0;
+					return ok(request, { repo: true, branch, branches, dirty });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git info failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitSwitchBranch(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					await runGit(canonical, ["checkout", request.payload.branch]);
+					return ok(request, { branch: await gitBranch(canonical) });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git switch failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitCreateBranch(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const name = request.payload.name.trim();
+					if (!name) return err(request, { code: "internal", message: "branch name is required", details: {} });
+					await runGit(canonical, ["checkout", "-b", name]);
+					return ok(request, { branch: await gitBranch(canonical) });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git create branch failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitPull(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const output = (await runGit(canonical, ["pull", "--ff-only"])).trim().slice(0, 1000);
+					return ok(request, { branch: await gitBranch(canonical), output });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git pull failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
 			async importFiles(request) {
 				const { payload } = request;
 				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
@@ -4762,6 +4809,56 @@ const workspaceInsertSessionBeforeRequestSchema = z$1.object({
 });
 /** workspace.insertSessionBefore response value. */
 const workspaceInsertSessionBeforeValueSchema = z$1.object({ workspace: workspaceViewSchema });
+/** workspace.gitInfo request payload: absolute folder path. */
+const workspaceGitInfoRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitInfo response value. */
+const workspaceGitInfoValueSchema = z$1.object({ repo: z$1.boolean(), branch: z$1.string().nullable(), branches: z$1.array(z$1.string()), dirty: z$1.boolean() });
+/** workspace.gitSwitchBranch request payload. */
+const workspaceGitSwitchBranchRequestSchema = z$1.object({ path: z$1.string(), branch: z$1.string() });
+/** workspace.gitSwitchBranch response value. */
+const workspaceGitSwitchBranchValueSchema = z$1.object({ branch: z$1.string() });
+/** workspace.gitCreateBranch request payload. */
+const workspaceGitCreateBranchRequestSchema = z$1.object({ path: z$1.string(), name: z$1.string() });
+/** workspace.gitCreateBranch response value. */
+const workspaceGitCreateBranchValueSchema = z$1.object({ branch: z$1.string() });
+/** workspace.gitPull request payload. */
+const workspaceGitPullRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitPull response value. */
+const workspaceGitPullValueSchema = z$1.object({ branch: z$1.string(), output: z$1.string() });
+/** 校验绝对路径是否落在任一工作区根目录内（Windows 大小写不敏感）。 */
+function isInsideWorkspaceRoots(ctx, canonical) {
+	return ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
+		const lower = process.platform === "win32" ? (value) => value.toLowerCase() : (value) => value;
+		const lr = lower(resolve(root));
+		const lt = lower(canonical);
+		return lt === lr || lt.startsWith(lr.endsWith(sep) ? lr : lr + sep);
+	}));
+}
+/** 运行 git 命令（30s 超时；失败时把 stderr 首行作为错误信息）。 */
+function runGit(dir, args) {
+	return new Promise((resolvePromise, rejectPromise) => {
+		execFile("git", ["-C", dir, ...args], { encoding: "utf8", timeout: 30000, windowsHide: true }, (error, stdout, stderr) => {
+			if (error) {
+				const detail = ((stderr || "") + " " + (error.message || "")).trim().split(/\r?\n/)[0].slice(0, 500);
+				rejectPromise(new Error(detail || "git failed"));
+			} else resolvePromise(stdout || "");
+		});
+	});
+}
+/** 目录是否为 git 仓库（.git 存在）。 */
+async function isGitRepo(dir) {
+	try {
+		const info = await stat(join(dir, ".git"));
+		return info.isDirectory() || info.isFile();
+	} catch {
+		return false;
+	}
+}
+/** 当前分支名。 */
+async function gitBranch(dir) {
+	return (await runGit(dir, ["rev-parse", "--abbrev-ref", "HEAD"])).trim();
+}
+
 /** workspace.setAdditionalPaths request payload: the workspace plus its complete additional root list. */
 const workspaceAddFilesRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, entries: z$1.array(z$1.object({ path: z$1.string().optional(), sessionId: z$1.string().optional(), name: z$1.string(), size: z$1.number().int().nonnegative() })) }); const workspaceAddFilesValueSchema = z$1.object({ workspace: workspaceViewSchema }); const workspaceRemoveFileRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, fileId: z$1.string() }); const workspaceRemoveFileValueSchema = z$1.object({ workspace: workspaceViewSchema }); const workspaceImportFilesRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, files: z$1.array(z$1.object({ name: z$1.string(), data: z$1.string(), sessionId: z$1.string().optional() })) }); const workspaceImportFilesValueSchema = z$1.object({ workspace: workspaceViewSchema, imported: z$1.array(z$1.object({ path: z$1.string(), name: z$1.string(), size: z$1.number().int().nonnegative() })) });
 const workspaceSetAdditionalPathsRequestSchema = z$1.object({
@@ -5280,6 +5377,22 @@ const UNARY_ROUTES = {
 	"workspace.removeFile": {
 		schema: workspaceRemoveFileRequestSchema,
 		invoke: (api, r) => api.workspace.removeFile(r)
+	},
+	"workspace.gitInfo": {
+		schema: workspaceGitInfoRequestSchema,
+		invoke: (api, r) => api.workspace.gitInfo(r)
+	},
+	"workspace.gitSwitchBranch": {
+		schema: workspaceGitSwitchBranchRequestSchema,
+		invoke: (api, r) => api.workspace.gitSwitchBranch(r)
+	},
+	"workspace.gitCreateBranch": {
+		schema: workspaceGitCreateBranchRequestSchema,
+		invoke: (api, r) => api.workspace.gitCreateBranch(r)
+	},
+	"workspace.gitPull": {
+		schema: workspaceGitPullRequestSchema,
+		invoke: (api, r) => api.workspace.gitPull(r)
 	},
 	"workspace.importFiles": {
 		schema: workspaceImportFilesRequestSchema,

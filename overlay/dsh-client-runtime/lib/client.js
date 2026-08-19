@@ -9723,6 +9723,30 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				if (result.ok) this.upsert(result.value.workspace);
 				return result;
 			}
+			/** 文件夹 git 信息（是否仓库/当前分支/分支列表/是否脏）。 */
+			async gitInfo(path) {
+				const response = await this.api.workspace.gitInfo({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 切换文件夹的 git 分支。 */
+			async gitSwitchBranch(path, branch) {
+				const response = await this.api.workspace.gitSwitchBranch({ path, branch });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 在文件夹新建 git 分支并切换。 */
+			async gitCreateBranch(path, name) {
+				const response = await this.api.workspace.gitCreateBranch({ path, name });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 更新文件夹代码（git pull --ff-only）。 */
+			async gitPull(path) {
+				const response = await this.api.workspace.gitPull({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
 			/** Upload file bytes into the workspace's .dsh-uploads directory and mount them as public files. */
 			async importFiles(workspaceId, files) {
 				const { result } = await this.api.workspace.importFiles({
@@ -10220,6 +10244,22 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				const response = await this.api.host.readFile({ path });
 				if (!response.result.ok) throw new Error(response.result.error.message);
 				return response.result.value;
+			}
+			/** 文件夹 git 信息（是否仓库/当前分支/分支列表/是否脏）。 */
+			async gitInfo(path) {
+				return await this.manager.gitInfo(path);
+			}
+			/** 切换文件夹的 git 分支。 */
+			async gitSwitchBranch(path, branch) {
+				return await this.manager.gitSwitchBranch(path, branch);
+			}
+			/** 在文件夹新建 git 分支并切换。 */
+			async gitCreateBranch(path, name) {
+				return await this.manager.gitCreateBranch(path, name);
+			}
+			/** 更新文件夹代码（git pull --ff-only）。 */
+			async gitPull(path) {
+				return await this.manager.gitPull(path);
 			}
 			/**
 			* Create one child directory through the Host's `browse` capability.
