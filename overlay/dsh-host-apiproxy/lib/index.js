@@ -3436,7 +3436,9 @@ function createApiProxy(ctx, defaults) {
 				try {
 					const canonical = resolve(request.payload.path);
 					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
-					const output = (await runGit(canonical, ["pull", "--ff-only"])).trim().slice(0, 1000);
+					const dirty = (await runGit(canonical, ["status", "--porcelain"])).trim().length > 0;
+					if (dirty) return err(request, { code: "internal", message: "有未提交的修改，无法直接更新代码；请先点击「推送代码」提交改动后再更新", details: {} });
+					const output = (await runGit(canonical, ["pull", "--ff-only"], 60000)).trim().slice(0, 1000);
 					return ok(request, { branch: await gitBranch(canonical), output });
 				} catch (error) {
 					return err(request, { code: "internal", message: `git pull failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
@@ -3446,8 +3448,16 @@ function createApiProxy(ctx, defaults) {
 				try {
 					const canonical = resolve(request.payload.path);
 					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
-					const output = (await runGit(canonical, ["push"])).trim().slice(0, 1000);
-					return ok(request, { branch: await gitBranch(canonical), output });
+					let commitMessage = "";
+					const dirty = (await runGit(canonical, ["status", "--porcelain"])).trim().length > 0;
+					if (dirty) {
+						await runGit(canonical, ["add", "-A"]);
+						commitMessage = await generateCommitMessage(canonical);
+						await runGit(canonical, ["commit", "-m", commitMessage]);
+					}
+					const pushOut = (await runGit(canonical, ["push"], 60000)).trim().slice(0, 800);
+					const branch = await gitBranch(canonical);
+					return ok(request, { branch, output: commitMessage ? `已提交并推送：${commitMessage}\n${pushOut}` : pushOut });
 				} catch (error) {
 					return err(request, { code: "internal", message: `git push failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
@@ -4873,18 +4883,61 @@ async function gitBranch(dir) {
 	return (await runGit(dir, ["rev-parse", "--abbrev-ref", "HEAD"])).trim();
 }
 
-	/** 本地是否落后于上游（先静默 fetch 刷新远端引用，失败则用缓存引用；无上游视为未落后）。 */
+	/** 静默 fetch 的最小间隔：避免高频刷新触发远程（gitee 等）429 限流。 */
+const GIT_FETCH_THROTTLE_MS = 5 * 60 * 1000;
+const gitFetchTimes = new Map();
+/** 本地是否落后于上游（先静默 fetch 刷新远端引用，失败则用缓存引用；无上游视为未落后）。 */
 	async function gitBehind(dir) {
 		try {
 			const upstream = (await runGit(dir, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"], 15000)).trim();
 			if (!upstream) return false;
-			try {
-				await runGit(dir, ["fetch", "--quiet"], 15000);
-			} catch {}
+			const now = Date.now();
+			const lastFetch = gitFetchTimes.get(dir) ?? 0;
+			if (now - lastFetch >= GIT_FETCH_THROTTLE_MS) {
+				try {
+					await runGit(dir, ["fetch", "--quiet"], 15000);
+					gitFetchTimes.set(dir, now);
+				} catch {}
+			}
 			const counts = (await runGit(dir, ["rev-list", "--left-right", "--count", "HEAD..." + upstream], 15000)).trim().split(/\s+/).filter(Boolean);
 			return Number(counts[1] ?? 0) > 0;
 		} catch {
 			return false;
+		}
+	}
+
+	/** 读取智谱 GLM API Key（宿主 ~/.mcp.json 的 glm4v-vision 服务，无则空串）。 */
+	async function readGlmKey() {
+		try {
+			const raw = await readFile(join(homedir(), ".mcp.json"), "utf8");
+			const cfg = JSON.parse(raw);
+			return cfg.mcpServers?.["glm4v-vision"]?.env?.ZHIPU_API_KEY ?? "";
+		} catch {
+			return "";
+		}
+	}
+	/** 用 AI 根据暂存区改动生成中文 Conventional Commits 提交信息；失败回退为固定文案。 */
+	async function generateCommitMessage(dir) {
+		try {
+			const key = await readGlmKey();
+			if (!key) throw new Error("no GLM key");
+			const stat = (await runGit(dir, ["diff", "--cached", "--stat"], 15000)).trim().slice(0, 2000);
+			const diff = (await runGit(dir, ["diff", "--cached"], 15000)).trim().slice(0, 6000);
+			const branch = (await runGit(dir, ["rev-parse", "--abbrev-ref", "HEAD"], 15000)).trim();
+			const prompt = `根据下面的 git 改动生成一条中文提交信息：要求符合 Conventional Commits 规范（如 fix(模块): 描述、feat(模块): 描述），只输出一行，60 字以内，描述清楚这次代码修复/改动的内容。当前分支: ${branch}\n--- git diff --cached --stat ---\n${stat}\n--- git diff --cached（截断）---\n${diff}`;
+			const resp = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+				method: "POST",
+				headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+				body: JSON.stringify({ model: "glm-4-flash", messages: [{ role: "user", content: prompt }], temperature: 0.2 }),
+				signal: AbortSignal.timeout(30000)
+			});
+			if (!resp.ok) throw new Error("GLM HTTP " + resp.status);
+			const data = await resp.json();
+			const message = String(data.choices?.[0]?.message?.content ?? "").trim().split("\n")[0].replace(/^```[a-z]*|```$/g, "").trim().slice(0, 120);
+			if (!message) throw new Error("empty GLM message");
+			return message;
+		} catch (error) {
+			return "auto: update code (" + new Date().toISOString().slice(0, 10) + ")";
 		}
 	}
 
