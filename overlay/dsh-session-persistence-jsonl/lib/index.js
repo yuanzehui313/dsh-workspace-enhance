@@ -3,6 +3,7 @@ import { readdirSync } from "node:fs";
 import { link, mkdir, mkdtemp, open, readFile, readdir, realpath, rm, stat, truncate } from "node:fs/promises";
 import { dirname, join, parse, resolve, toNamespacedPath } from "node:path";
 import { performance } from "node:perf_hooks";
+import { Worker } from "node:worker_threads";
 import { scheduler } from "node:timers/promises";
 import { randomBytes } from "node:crypto";
 import { DEFAULT_PREPARED_SESSION_CACHE_SIZE, DEFAULT_WRITE_BATCH_MAX_DELAY_MS, MAX_WRITE_BATCH_DELAY_MS, PersistenceCoordinator, SessionFormatUnsupportedError, SessionPersistence, SessionPersistenceRevision, sessionFormatVersionRefusal } from "@deepseek-ai/dsh-session-persistence";
@@ -763,6 +764,43 @@ function isENOENT(error) {
 * listeners. Its torn-tail marker carries the byte offset and any events
 * recovered from an incomplete final Zstandard frame.
 */
+/** 在 worker 线程逐帧 zstd 解压，避免大会话日志解码阻塞宿主事件循环；失败回退主线程同步解码。 */
+async function decodeZstdFramesOffThread(buffer, frames) {
+	const workerCode = `
+		const { parentPort, workerData } = require("node:worker_threads");
+		const { zstdDecompressSync } = require("node:zlib");
+		const { buffer, frames } = workerData;
+		const out = [];
+		for (const { start, end } of frames) {
+			out.push(zstdDecompressSync(buffer.subarray(start, end)));
+		}
+		const copies = out.map((view) => {
+			const copy = new ArrayBuffer(view.byteLength);
+			new Uint8Array(copy).set(view);
+			return copy;
+		});
+		parentPort.postMessage(copies, copies);
+	`;
+	return await new Promise((resolvePromise, rejectPromise) => {
+		let settled = false;
+		const finish = (fn) => (value) => {
+			if (settled) return;
+			settled = true;
+			worker.terminate().catch(() => {});
+			fn(value);
+		};
+		const worker = new Worker(workerCode, { eval: true, workerData: { buffer, frames } });
+		worker.once("message", finish((buffers) => resolvePromise(buffers.map((view) => Buffer.from(view)))));
+		worker.once("error", finish(rejectPromise));
+		worker.once("exit", (exitCode) => {
+			if (!settled) finish(rejectPromise)(new Error("zstd decode worker exited with code " + exitCode));
+		});
+	}).catch(() => {
+		const decoder = createZstdFrameDecoder();
+		return [...decoder.decode(buffer, frames)];
+	});
+}
+
 var JsonlSessionPersistence = class extends SessionPersistence {
 	config;
 	supportsRawArtifacts = true;
@@ -976,21 +1014,17 @@ var JsonlSessionPersistence = class extends SessionPersistence {
 		const { frames, tornStart } = scanZstdFrames(buffer);
 		signal?.throwIfAborted();
 		if (frames.length === 0) throw new Error("empty or header-less Zstandard session log");
-		const decoder = createZstdFrameDecoder();
 		let yieldDeadline = performance.now() + ZSTD_DECODE_YIELD_INTERVAL_MS;
 		try {
-			const decodedFrames = decoder.decode(buffer, frames);
+			const decodedFrames = await decodeZstdFramesOffThread(buffer, frames);
 			signal?.throwIfAborted();
-			const headerFrame = decodedFrames.next();
-			signal?.throwIfAborted();
-			/* v8 ignore next -- a non-empty structural frame list makes the decoder yield its first frame or throw. */
-			if (headerFrame.done) throw new Error("empty or header-less Zstandard session log");
-			assertZstdHeaderFrame(headerFrame.value);
-			const scanner = new SessionLogScanner(headerFrame.value);
+			if (decodedFrames.length === 0) throw new Error("empty or header-less Zstandard session log");
+			assertZstdHeaderFrame(decodedFrames[0]);
+			const scanner = new SessionLogScanner(decodedFrames[0]);
 			let remainingFrames = frames.length - 1;
-			for (const plaintext of decodedFrames) {
+			for (let frameIndex = 1; frameIndex < decodedFrames.length; frameIndex++) {
 				signal?.throwIfAborted();
-				scanner.write(plaintext);
+				scanner.write(decodedFrames[frameIndex]);
 				remainingFrames -= 1;
 				if (remainingFrames > 0 && performance.now() >= yieldDeadline) {
 					await scheduler.yield();
