@@ -6,9 +6,6 @@ DeepSeek Harness（DSH）工作区与会话管理增强插件。以**标准 DSH 
 **overlay 补丁集**方式覆盖官方 `@deepseek-ai/dsh-*` 的 17 个 bundle（这些改动点位于
 apiproxy RPC 表、工作区注册表、工作区浏览器 UI 等不可叠加扩展的内部实现中），配套一键
 安装 / 回滚 / 校验脚本。
-![Uploading image.png…]()
-
-
 ## 功能清单
 
 1. **回收站**（软删除 / 恢复 / 彻底删除，会话 + 工作区）：`session.delete` 变为移入回收站，
