@@ -5589,10 +5589,10 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		/** workspace.setAdditionalPaths response value. */
 		const workspaceSetAdditionalPathsValueSchema = object({ workspace: workspaceViewSchema }); /** workspace.addFiles response value. */ const workspaceAddFilesValueSchema = object({ workspace: workspaceViewSchema }); /** workspace.removeFile response value. */ const workspaceRemoveFileValueSchema = object({ workspace: workspaceViewSchema });
 		/** workspace.importFiles response value. */ const workspaceImportFilesValueSchema = object({ workspace: workspaceViewSchema, imported: array(object({ path: string(), name: string(), size: number().int().nonnegative() })) });
-/** workspace.gitInfo response value. */ const workspaceGitInfoValueSchema = object({ repo: boolean(), branch: string().nullable(), branches: array(string()), dirty: boolean(), behind: boolean() });
+/** workspace.gitInfo response value. */ const workspaceGitInfoValueSchema = object({ repo: boolean(), branch: string().nullable(), branches: array(string()), remoteBranches: array(string()), dirty: boolean(), behind: number(), ahead: number() });
 /** workspace.gitSwitchBranch response value. */ const workspaceGitSwitchBranchValueSchema = object({ branch: string() });
 /** workspace.gitCreateBranch response value. */ const workspaceGitCreateBranchValueSchema = object({ branch: string() });
-/** workspace.gitPull response value. */ const workspaceGitPullValueSchema = object({ branch: string(), output: string() }); const workspaceGitPushValueSchema = object({ branch: string(), output: string() });
+/** workspace.gitPull response value. */ const workspaceGitPullValueSchema = object({ branch: string(), output: string() }); const workspaceGitPushValueSchema = object({ branch: string(), output: string() }); const workspaceGitChangesValueSchema = object({ files: array(object({ file: string(), status: string() })) }); const workspaceGitDiffValueSchema = object({ diff: string() }); const workspaceGitStageFileValueSchema = object({ ok: boolean() }); const workspaceGitUnstageFileValueSchema = object({ ok: boolean() }); const workspaceGitDiscardFileValueSchema = object({ ok: boolean() }); const workspaceGitPushPreviewValueSchema = object({ message: string(), files: array(object({ file: string(), status: string() })), ahead: number() });
 		//#endregion
 		//#region ../../host/apiproxy/lib/types/api/events.schema.js
 		/**
@@ -6162,7 +6162,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			"host.readFile": hostReadFileValueSchema,
 			"workspace.list": workspaceListValueSchema,
 			"workspace.create": workspaceCreateValueSchema,
-			"workspace.setAdditionalPaths": workspaceSetAdditionalPathsValueSchema, "workspace.addFiles": workspaceAddFilesValueSchema, "workspace.removeFile": workspaceRemoveFileValueSchema, "workspace.importFiles": workspaceImportFilesValueSchema, "workspace.gitInfo": workspaceGitInfoValueSchema, "workspace.gitSwitchBranch": workspaceGitSwitchBranchValueSchema, "workspace.gitCreateBranch": workspaceGitCreateBranchValueSchema, "workspace.gitPull": workspaceGitPullValueSchema, "workspace.gitPush": workspaceGitPushValueSchema,
+			"workspace.setAdditionalPaths": workspaceSetAdditionalPathsValueSchema, "workspace.addFiles": workspaceAddFilesValueSchema, "workspace.removeFile": workspaceRemoveFileValueSchema, "workspace.importFiles": workspaceImportFilesValueSchema, "workspace.gitInfo": workspaceGitInfoValueSchema, "workspace.gitSwitchBranch": workspaceGitSwitchBranchValueSchema, "workspace.gitCreateBranch": workspaceGitCreateBranchValueSchema, "workspace.gitPull": workspaceGitPullValueSchema, "workspace.gitPush": workspaceGitPushValueSchema, "workspace.gitChanges": workspaceGitChangesValueSchema, "workspace.gitDiff": workspaceGitDiffValueSchema, "workspace.gitStageFile": workspaceGitStageFileValueSchema, "workspace.gitUnstageFile": workspaceGitUnstageFileValueSchema, "workspace.gitDiscardFile": workspaceGitDiscardFileValueSchema, "workspace.gitPushPreview": workspaceGitPushPreviewValueSchema,
 			"workspace.rename": workspaceRenameValueSchema,
 			"workspace.delete": workspaceDeleteValueSchema,
 			"workspace.insertBefore": workspaceInsertBeforeValueSchema,
@@ -6391,7 +6391,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			workspace = {
 				list: (payload, signal) => this.callUnary("workspace.list", payload, signal),
 				create: (payload, signal) => this.callUnary("workspace.create", payload, signal),
-				setAdditionalPaths: (payload, signal) => this.callUnary("workspace.setAdditionalPaths", payload, signal), addFiles: (payload, signal) => this.callUnary("workspace.addFiles", payload, signal), removeFile: (payload, signal) => this.callUnary("workspace.removeFile", payload, signal), importFiles: (payload, signal) => this.callUnary("workspace.importFiles", payload, signal), gitInfo: (payload, signal) => this.callUnary("workspace.gitInfo", payload, signal), gitSwitchBranch: (payload, signal) => this.callUnary("workspace.gitSwitchBranch", payload, signal), gitCreateBranch: (payload, signal) => this.callUnary("workspace.gitCreateBranch", payload, signal), gitPull: (payload, signal) => this.callUnary("workspace.gitPull", payload, signal), gitPush: (payload, signal) => this.callUnary("workspace.gitPush", payload, signal),
+				setAdditionalPaths: (payload, signal) => this.callUnary("workspace.setAdditionalPaths", payload, signal), addFiles: (payload, signal) => this.callUnary("workspace.addFiles", payload, signal), removeFile: (payload, signal) => this.callUnary("workspace.removeFile", payload, signal), importFiles: (payload, signal) => this.callUnary("workspace.importFiles", payload, signal), gitInfo: (payload, signal) => this.callUnary("workspace.gitInfo", payload, signal), gitSwitchBranch: (payload, signal) => this.callUnary("workspace.gitSwitchBranch", payload, signal), gitCreateBranch: (payload, signal) => this.callUnary("workspace.gitCreateBranch", payload, signal), gitPull: (payload, signal) => this.callUnary("workspace.gitPull", payload, signal), gitPush: (payload, signal) => this.callUnary("workspace.gitPush", payload, signal), gitChanges: (payload, signal) => this.callUnary("workspace.gitChanges", payload, signal), gitDiff: (payload, signal) => this.callUnary("workspace.gitDiff", payload, signal), gitStageFile: (payload, signal) => this.callUnary("workspace.gitStageFile", payload, signal), gitUnstageFile: (payload, signal) => this.callUnary("workspace.gitUnstageFile", payload, signal), gitDiscardFile: (payload, signal) => this.callUnary("workspace.gitDiscardFile", payload, signal), gitPushPreview: (payload, signal) => this.callUnary("workspace.gitPushPreview", payload, signal),
 				rename: (payload, signal) => this.callUnary("workspace.rename", payload, signal),
 				delete: (payload, signal) => this.callUnary("workspace.delete", payload, signal),
 				insertBefore: (payload, signal) => this.callUnary("workspace.insertBefore", payload, signal),
@@ -9549,7 +9549,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							return ok(request, { workspace: { ...workspace }, imported });
 						},
 						gitInfo: (request) => {
-							return ok(request, { repo: false, branch: null, branches: [], dirty: false, behind: false });
+							return ok(request, { repo: false, branch: null, branches: [], remoteBranches: [], dirty: false, behind: 0, ahead: 0 });
 						},
 						gitSwitchBranch: (request) => {
 							return err(request, { code: "internal", message: "git operations are unavailable in replay mode", details: {} });
@@ -9562,6 +9562,24 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 						},
 						gitPush: (request) => {
 							return err(request, { code: "internal", message: "git operations are unavailable in replay mode", details: {} });
+						},
+						gitChanges: (request) => {
+							return ok(request, { files: [] });
+						},
+						gitDiff: (request) => {
+							return ok(request, { diff: "" });
+						},
+						gitStageFile: (request) => {
+							return ok(request, { ok: true });
+						},
+						gitUnstageFile: (request) => {
+							return ok(request, { ok: true });
+						},
+						gitDiscardFile: (request) => {
+							return ok(request, { ok: true });
+						},
+						gitPushPreview: (request) => {
+							return ok(request, { message: "", files: [], ahead: 0 });
 						},
 						rename: (request) => {
 							const { workspaceId, title } = request.payload;
@@ -10084,7 +10102,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					case "host.openPath": return this.api.host.openPath(request, new AbortController().signal);
 					case "workspace.list": return this.api.workspace.list(request);
 					case "workspace.create": return this.api.workspace.create(request);
-					case "workspace.setAdditionalPaths": return this.api.workspace.setAdditionalPaths(request); case "workspace.addFiles": return this.api.workspace.addFiles(request); case "workspace.removeFile": return this.api.workspace.removeFile(request); case "workspace.importFiles": return this.api.workspace.importFiles(request); case "workspace.gitInfo": return this.api.workspace.gitInfo(request); case "workspace.gitSwitchBranch": return this.api.workspace.gitSwitchBranch(request); case "workspace.gitCreateBranch": return this.api.workspace.gitCreateBranch(request); case "workspace.gitPull": return this.api.workspace.gitPull(request); case "workspace.gitPush": return this.api.workspace.gitPush(request);
+					case "workspace.setAdditionalPaths": return this.api.workspace.setAdditionalPaths(request); case "workspace.addFiles": return this.api.workspace.addFiles(request); case "workspace.removeFile": return this.api.workspace.removeFile(request); case "workspace.importFiles": return this.api.workspace.importFiles(request); case "workspace.gitInfo": return this.api.workspace.gitInfo(request); case "workspace.gitSwitchBranch": return this.api.workspace.gitSwitchBranch(request); case "workspace.gitCreateBranch": return this.api.workspace.gitCreateBranch(request); case "workspace.gitPull": return this.api.workspace.gitPull(request); case "workspace.gitPush": return this.api.workspace.gitPush(request); case "workspace.gitChanges": return this.api.workspace.gitChanges(request); case "workspace.gitDiff": return this.api.workspace.gitDiff(request); case "workspace.gitStageFile": return this.api.workspace.gitStageFile(request); case "workspace.gitUnstageFile": return this.api.workspace.gitUnstageFile(request); case "workspace.gitDiscardFile": return this.api.workspace.gitDiscardFile(request); case "workspace.gitPushPreview": return this.api.workspace.gitPushPreview(request);
 					case "workspace.rename": return this.api.workspace.rename(request);
 					case "workspace.delete": return this.api.workspace.delete(request);
 					case "workspace.insertBefore": return this.api.workspace.insertBefore(request);

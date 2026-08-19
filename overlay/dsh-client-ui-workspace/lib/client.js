@@ -1044,7 +1044,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/home/runner/work/deepseek-harness/deepseek-harness/packages/client/ui-workspace/src/client/WorkspaceBrowser.module.css.mjs
-		const css = ".qDHVXG_root{--dsh-session-list-edge-inset:var(--dsh-sidebar-inline-padding);--dsh-session-list-scrollbar-width:8px;--dsh-session-list-scrollbar-offset:2px;box-sizing:border-box;min-height:0;padding-right:var(--dsh-session-list-edge-inset);flex-direction:column;flex:1;display:flex}.qDHVXG_root.qDHVXG_rail{padding-right:0}.qDHVXG_iconButton{cursor:pointer;width:28px;height:28px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_iconButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_sectionHeader{box-sizing:border-box;height:36px;color:var(--dsw-alias-label-tertiary);border-radius:12px;flex:none;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:4px;padding-left:4px;display:flex;overflow:hidden}.qDHVXG_root:not(.qDHVXG_rail) .qDHVXG_sectionHeader{margin-top:2px;margin-right:-4px}.qDHVXG_sectionLabel{white-space:nowrap;opacity:1;visibility:visible;min-width:0;max-width:45%;transition:max-width .18s var(--ds-ease-in-out), margin-right .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;line-height:20px;overflow:hidden}.qDHVXG_sectionLabelHidden{opacity:0;visibility:hidden;max-width:0;margin-right:-4px;transition-delay:0s,0s,0s,0s,.18s;transform:translate(-4px)}.qDHVXG_searchSlot{box-sizing:border-box;min-width:0;max-width:28px;transition:max-width .18s var(--ds-ease-in-out), padding-left .18s var(--ds-ease-in-out);flex:1;align-items:center;margin-left:auto;padding-left:0;display:flex}.qDHVXG_searchSlotExpanded{max-width:100%;padding-left:0}.qDHVXG_headerActions{opacity:1;visibility:visible;max-width:60px;transition:max-width .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;align-items:center;gap:4px;display:flex;overflow:hidden}.qDHVXG_headerActionsHidden{opacity:0;visibility:hidden;pointer-events:none;max-width:0;transition-delay:0s,0s,0s,.18s;transform:translate(4px)}.qDHVXG_search{box-sizing:border-box;cursor:text;width:100%;height:28px;color:var(--dsw-alias-label-secondary);transition:width .18s var(--ds-ease-in-out), padding .18s var(--ds-ease-in-out), border-color .18s var(--ds-ease-in-out), background-color .18s var(--ds-ease-in-out);background:0 0;border:none;border-radius:50%;flex:none;align-items:center;gap:0;margin:0;padding:0;display:flex;overflow:hidden}.qDHVXG_searchExpanded{border:1px solid var(--dsw-alias-border-l2);width:calc(100% + 4px);height:30px;color:var(--dsw-alias-label-caption);background:0 0;border-radius:10px;margin-inline:-2px;padding:0 4px 0 0}.qDHVXG_searchButton{cursor:pointer;width:28px;height:28px;color:inherit;background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_searchExpanded .qDHVXG_searchButton{width:28px;height:30px}.qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_searchExpanded .qDHVXG_searchButton:hover{background:0 0}.qDHVXG_searchInput{opacity:0;pointer-events:none;width:0;min-width:0;color:var(--dsw-alias-label-primary);transition:opacity .12s var(--ds-ease-in-out);background:0 0;border:none;outline:none;flex:1;font-size:13px;line-height:18px}.qDHVXG_searchExpanded .qDHVXG_searchInput{opacity:1;pointer-events:auto;margin-left:-2px}.qDHVXG_searchInput::placeholder{color:var(--dsw-alias-label-tertiary)}.qDHVXG_clearButton{cursor:pointer;width:24px;height:24px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_clearButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_rail .qDHVXG_sectionHeader{justify-content:flex-start;gap:0;margin-bottom:12px;padding-left:0}.qDHVXG_rail .qDHVXG_headerActions{max-width:none}.qDHVXG_rail .qDHVXG_iconButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_search{background:0 0;border-color:#0000;gap:0;width:36px;height:36px;margin:0 0 12px;padding:0}.qDHVXG_rail .qDHVXG_searchButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_listArea{min-height:0;margin-left:-4px;margin-right:calc(-1 * var(--dsh-session-list-edge-inset));flex-direction:column;flex:1;padding-left:4px;display:flex;overflow:visible}.qDHVXG_rail .qDHVXG_listArea{margin-left:0;margin-right:0;padding-left:0}.qDHVXG_treeBody{flex-direction:column;flex:1;min-height:0;display:flex;position:relative;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}.qDHVXG_fade{left:0;right:var(--dsh-session-list-edge-inset);background:linear-gradient(to bottom, transparent, var(--dsw-specific-sidebar-fill));pointer-events:none;height:24px;position:absolute;bottom:0}.qDHVXG_wide{animation:qDHVXG_wide-in .2s var(--ds-ease-in-out)}@keyframes qDHVXG_wide-in{0%{opacity:0}}.qDHVXG_list{min-height:0;margin-left:-4px;margin-right:var(--dsh-session-list-scrollbar-offset);padding-left:4px;padding-right:calc(var(--dsh-session-list-edge-inset) - var(--dsh-session-list-scrollbar-width) - var(--dsh-session-list-scrollbar-offset));scrollbar-gutter:stable;flex:1;padding-bottom:16px;overflow-y:auto}.qDHVXG_flatList>*+*,.qDHVXG_searchTree>[role=treeitem]+[role=treeitem],.qDHVXG_groupSection>*+*{margin-top:2px}.qDHVXG_searchStatus,.qDHVXG_searchWarning{color:var(--dsw-alias-label-tertiary);padding:10px 12px;font-size:12px;line-height:18px}.qDHVXG_searchWarning{color:var(--dsw-alias-label-secondary)}.qDHVXG_groupSection{position:relative}.qDHVXG_groupSection+.qDHVXG_groupSection{margin-top:4px}.qDHVXG_listTopDropIndicator,.qDHVXG_workspaceDropBefore:before,.qDHVXG_workspaceDropAfter:after{content:\"\";z-index:1;background:linear-gradient(55deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 0 / 5px 7px no-repeat, linear-gradient(125deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 5px / 5px 7px no-repeat, linear-gradient(var(--dsw-alias-state-business-primary) 0 0) 4px 5px / calc(100% - 4px) 2px no-repeat;pointer-events:none;height:12px;position:absolute;left:0;right:0}.qDHVXG_listTopDropIndicator{top:-8px;left:0;right:var(--dsh-session-list-edge-inset)}.qDHVXG_listTopDropActive>.qDHVXG_workspaceDropBefore:first-child:before{display:none}.qDHVXG_workspaceDropBefore:before{top:-8px}.qDHVXG_workspaceDropAfter:after{bottom:-8px}.qDHVXG_sessionOverflowButton{cursor:pointer;text-align:left;width:100%;height:28px;color:var(--dsw-alias-label-tertiary);background:0 0;border:none;border-radius:8px;padding:0 12px 0 28px;font-size:12px}.qDHVXG_groupSection>.qDHVXG_sessionOverflowButton{margin-top:0}.qDHVXG_sessionOverflowButton:hover{color:var(--dsw-alias-label-secondary);background:0 0}.qDHVXG_empty{color:var(--dsw-alias-label-tertiary);padding:16px 12px;font-size:13px}.qDHVXG_renameInput{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);width:100%;height:44px;color:var(--dsw-alias-label-primary);background:0 0;border-radius:22px;outline:none;padding:7px 14px;font-size:14px;font-weight:400;line-height:22px}.qDHVXG_renameInput:disabled{color:var(--dsw-alias-label-dimmed)}.qDHVXG_renameError{color:var(--dsw-alias-state-error-primary);margin-top:8px;font-size:12px;line-height:18px}.qDHVXG_deleteAction:not(:disabled){color:var(--dsw-alias-state-error-primary)}.qDHVXG_deleteStatus{color:var(--dsw-alias-label-secondary);font-size:12px;line-height:18px}@media (prefers-reduced-motion:reduce){.qDHVXG_wide{animation:none}.qDHVXG_search,.qDHVXG_sectionLabel,.qDHVXG_searchSlot,.qDHVXG_searchInput,.qDHVXG_headerActions{transition:none}}.qDHVXG_mergeBar{display:flex;align-items:center;gap:8px;padding:10px 12px 10px;margin-top:10px;border-top:1px solid var(--dsw-alias-interactive-bg-hover);font-weight:600}.qDHVXG_mergeHint{flex:1;min-width:0;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);font-weight:600}.qDHVXG_sessionArea{margin:8px 6px 2px;padding:2px 0 8px;border:1px solid transparent;border-radius:10px;background:rgba(245,158,11,0.07)}.qDHVXG_sessionAreaHeader{margin:0 8px 5px;padding:5px 2px 6px;border-bottom:1px solid var(--dsw-alias-border-l2);font-size:13px;font-weight:600;letter-spacing:.4px;color:var(--dsw-alias-label-secondary);display:flex;align-items:center;gap:6px}.qDHVXG_sessionUnit{position:relative;margin:0 6px;border:1px solid transparent;border-radius:10px;background:transparent;overflow:visible}.qDHVXG_sessionUnit + .qDHVXG_sessionUnit{margin-top:12px}.qDHVXG_sessionUnit .YDXeBa_sessionRow{margin:0;border:0;border-radius:0;background:transparent}.qDHVXG_sessionFilesBlock .YDXeBa_sessionRow{font-size:10px;font-style:italic;opacity:.8}.qDHVXG_gitChip{cursor:pointer;border:1px solid var(--dsw-alias-border-l2);background:rgba(245,158,11,0.10);color:var(--dsw-alias-label-primary);border-radius:10px;min-height:18px;flex:none;gap:4px;align-items:center;margin-left:auto;padding:2px 7px;font-family:var(--ds-font-family-code);font-size:10px;line-height:16px;display:inline-flex;max-width:60%;white-space:normal;word-break:break-all}.qDHVXG_gitChip:hover{border-color:var(--dsw-alias-state-warn-primary);color:var(--dsw-alias-state-warn-primary);background:rgba(245,158,11,0.16)}.qDHVXG_gitDirty{width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-state-warn-primary);flex:none}.qDHVXG_gitDot{width:6px;height:6px;border-radius:50%;flex:none}.qDHVXG_gitDotDirty{background:var(--dsw-alias-state-warn-primary)}.qDHVXG_gitDotBehind{background:var(--dsw-alias-state-business-primary)}.qDHVXG_gitDotClean{background:var(--dsw-alias-state-success-primary,#16a34a)}.qDHVXG_gitMenu{position:absolute;top:100%;left:8px;right:8px;z-index:30;box-sizing:border-box;background:var(--dsw-specific-sidebar-fill,#1d1e24);border:1px solid var(--dsw-alias-border-l2);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.45);margin-top:4px;padding:8px}.qDHVXG_gitMenuHead{display:flex;align-items:center;flex-wrap:wrap;gap:6px;color:var(--dsw-alias-label-primary);font-size:12px;font-weight:600;padding:2px 4px 6px}.qDHVXG_gitHeadBranch{min-width:0;word-break:break-all}.qDHVXG_gitMenuStatus{display:inline-flex;align-items:center;gap:4px;color:var(--dsw-alias-label-tertiary);font-size:10px;font-weight:500;margin-left:auto;white-space:nowrap}.qDHVXG_gitMenuDirty{color:var(--dsw-alias-state-warn-primary);font-size:10px;font-weight:500}.qDHVXG_gitBranchList{max-height:150px;overflow-y:auto;border-top:1px solid var(--dsw-alias-border-l2);margin-top:4px;padding-top:4px}.qDHVXG_gitBranchRow{cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:space-between;border-radius:8px;color:var(--dsw-alias-label-secondary);font-size:12px;padding:5px 8px;word-break:break-all}.qDHVXG_gitBranchRow:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}.qDHVXG_gitBranchRowActive{color:var(--dsw-alias-state-warn-primary);font-weight:600}.qDHVXG_gitRowBusy{opacity:.5;pointer-events:none}.qDHVXG_gitNewRow{display:flex;gap:6px;border-top:1px solid var(--dsw-alias-border-l2);margin-top:6px;padding-top:8px}.qDHVXG_gitInput{box-sizing:border-box;min-width:0;flex:1;height:26px;border:1px solid var(--dsw-alias-border-l2);border-radius:8px;background:transparent;color:var(--dsw-alias-label-primary);outline:none;padding:0 8px;font-size:12px}.qDHVXG_gitInput:focus{border-color:var(--dsw-alias-state-warn-primary)}.qDHVXG_gitBtn{cursor:pointer;height:26px;border:1px solid var(--dsw-alias-border-l2);border-radius:8px;background:transparent;color:var(--dsw-alias-label-primary);flex:none;align-items:center;gap:4px;padding:0 10px;font-size:12px;display:inline-flex}.qDHVXG_gitBtn:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_gitBtn:disabled{opacity:.45;cursor:default}.qDHVXG_gitMenuFoot{display:flex;gap:6px;margin-top:8px}.qDHVXG_gitOutput{white-space:pre-wrap;word-break:break-all;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover);border:1px solid var(--dsw-alias-border-l2);border-radius:8px;font-size:11px;line-height:16px;max-height:120px;overflow-y:auto;margin-top:8px;padding:6px 8px}.qDHVXG_gitError{color:var(--dsw-alias-state-error-primary);font-size:11px;line-height:16px;padding:2px 4px 6px;word-break:break-all}";
+		const css = ".qDHVXG_root{--dsh-session-list-edge-inset:var(--dsh-sidebar-inline-padding);--dsh-session-list-scrollbar-width:8px;--dsh-session-list-scrollbar-offset:2px;box-sizing:border-box;min-height:0;padding-right:var(--dsh-session-list-edge-inset);flex-direction:column;flex:1;display:flex}.qDHVXG_root.qDHVXG_rail{padding-right:0}.qDHVXG_iconButton{cursor:pointer;width:28px;height:28px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_iconButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_sectionHeader{box-sizing:border-box;height:36px;color:var(--dsw-alias-label-tertiary);border-radius:12px;flex:none;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:4px;padding-left:4px;display:flex;overflow:hidden}.qDHVXG_root:not(.qDHVXG_rail) .qDHVXG_sectionHeader{margin-top:2px;margin-right:-4px}.qDHVXG_sectionLabel{white-space:nowrap;opacity:1;visibility:visible;min-width:0;max-width:45%;transition:max-width .18s var(--ds-ease-in-out), margin-right .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;line-height:20px;overflow:hidden}.qDHVXG_sectionLabelHidden{opacity:0;visibility:hidden;max-width:0;margin-right:-4px;transition-delay:0s,0s,0s,0s,.18s;transform:translate(-4px)}.qDHVXG_searchSlot{box-sizing:border-box;min-width:0;max-width:28px;transition:max-width .18s var(--ds-ease-in-out), padding-left .18s var(--ds-ease-in-out);flex:1;align-items:center;margin-left:auto;padding-left:0;display:flex}.qDHVXG_searchSlotExpanded{max-width:100%;padding-left:0}.qDHVXG_headerActions{opacity:1;visibility:visible;max-width:60px;transition:max-width .18s var(--ds-ease-in-out), opacity .12s var(--ds-ease-in-out), transform .18s var(--ds-ease-in-out), visibility 0s linear;flex:none;align-items:center;gap:4px;display:flex;overflow:hidden}.qDHVXG_headerActionsHidden{opacity:0;visibility:hidden;pointer-events:none;max-width:0;transition-delay:0s,0s,0s,.18s;transform:translate(4px)}.qDHVXG_search{box-sizing:border-box;cursor:text;width:100%;height:28px;color:var(--dsw-alias-label-secondary);transition:width .18s var(--ds-ease-in-out), padding .18s var(--ds-ease-in-out), border-color .18s var(--ds-ease-in-out), background-color .18s var(--ds-ease-in-out);background:0 0;border:none;border-radius:50%;flex:none;align-items:center;gap:0;margin:0;padding:0;display:flex;overflow:hidden}.qDHVXG_searchExpanded{border:1px solid var(--dsw-alias-border-l2);width:calc(100% + 4px);height:30px;color:var(--dsw-alias-label-caption);background:0 0;border-radius:10px;margin-inline:-2px;padding:0 4px 0 0}.qDHVXG_searchButton{cursor:pointer;width:28px;height:28px;color:inherit;background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_searchExpanded .qDHVXG_searchButton{width:28px;height:30px}.qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_searchExpanded .qDHVXG_searchButton:hover{background:0 0}.qDHVXG_searchInput{opacity:0;pointer-events:none;width:0;min-width:0;color:var(--dsw-alias-label-primary);transition:opacity .12s var(--ds-ease-in-out);background:0 0;border:none;outline:none;flex:1;font-size:13px;line-height:18px}.qDHVXG_searchExpanded .qDHVXG_searchInput{opacity:1;pointer-events:auto;margin-left:-2px}.qDHVXG_searchInput::placeholder{color:var(--dsw-alias-label-tertiary)}.qDHVXG_clearButton{cursor:pointer;width:24px;height:24px;color:var(--dsw-alias-label-secondary);background:0 0;border:none;border-radius:50%;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.qDHVXG_clearButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_rail .qDHVXG_sectionHeader{justify-content:flex-start;gap:0;margin-bottom:12px;padding-left:0}.qDHVXG_rail .qDHVXG_headerActions{max-width:none}.qDHVXG_rail .qDHVXG_iconButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_search{background:0 0;border-color:#0000;gap:0;width:36px;height:36px;margin:0 0 12px;padding:0}.qDHVXG_rail .qDHVXG_searchButton{width:36px;height:36px;color:var(--dsw-alias-label-primary)}.qDHVXG_rail .qDHVXG_searchButton:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_listArea{min-height:0;margin-left:-4px;margin-right:calc(-1 * var(--dsh-session-list-edge-inset));flex-direction:column;flex:1;padding-left:4px;display:flex;overflow:visible}.qDHVXG_rail .qDHVXG_listArea{margin-left:0;margin-right:0;padding-left:0}.qDHVXG_treeBody{flex-direction:column;flex:1;min-height:0;display:flex;position:relative;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}.qDHVXG_fade{left:0;right:var(--dsh-session-list-edge-inset);background:linear-gradient(to bottom, transparent, var(--dsw-specific-sidebar-fill));pointer-events:none;height:24px;position:absolute;bottom:0}.qDHVXG_wide{animation:qDHVXG_wide-in .2s var(--ds-ease-in-out)}@keyframes qDHVXG_wide-in{0%{opacity:0}}.qDHVXG_list{min-height:0;margin-left:-4px;margin-right:var(--dsh-session-list-scrollbar-offset);padding-left:4px;padding-right:calc(var(--dsh-session-list-edge-inset) - var(--dsh-session-list-scrollbar-width) - var(--dsh-session-list-scrollbar-offset));scrollbar-gutter:stable;flex:1;padding-bottom:16px;overflow-y:auto}.qDHVXG_flatList>*+*,.qDHVXG_searchTree>[role=treeitem]+[role=treeitem],.qDHVXG_groupSection>*+*{margin-top:2px}.qDHVXG_searchStatus,.qDHVXG_searchWarning{color:var(--dsw-alias-label-tertiary);padding:10px 12px;font-size:12px;line-height:18px}.qDHVXG_searchWarning{color:var(--dsw-alias-label-secondary)}.qDHVXG_groupSection{position:relative}.qDHVXG_groupSection+.qDHVXG_groupSection{margin-top:4px}.qDHVXG_listTopDropIndicator,.qDHVXG_workspaceDropBefore:before,.qDHVXG_workspaceDropAfter:after{content:\"\";z-index:1;background:linear-gradient(55deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 0 / 5px 7px no-repeat, linear-gradient(125deg, transparent calc(50% - 1px), var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) 0 5px / 5px 7px no-repeat, linear-gradient(var(--dsw-alias-state-business-primary) 0 0) 4px 5px / calc(100% - 4px) 2px no-repeat;pointer-events:none;height:12px;position:absolute;left:0;right:0}.qDHVXG_listTopDropIndicator{top:-8px;left:0;right:var(--dsh-session-list-edge-inset)}.qDHVXG_listTopDropActive>.qDHVXG_workspaceDropBefore:first-child:before{display:none}.qDHVXG_workspaceDropBefore:before{top:-8px}.qDHVXG_workspaceDropAfter:after{bottom:-8px}.qDHVXG_sessionOverflowButton{cursor:pointer;text-align:left;width:100%;height:28px;color:var(--dsw-alias-label-tertiary);background:0 0;border:none;border-radius:8px;padding:0 12px 0 28px;font-size:12px}.qDHVXG_groupSection>.qDHVXG_sessionOverflowButton{margin-top:0}.qDHVXG_sessionOverflowButton:hover{color:var(--dsw-alias-label-secondary);background:0 0}.qDHVXG_empty{color:var(--dsw-alias-label-tertiary);padding:16px 12px;font-size:13px}.qDHVXG_renameInput{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);width:100%;height:44px;color:var(--dsw-alias-label-primary);background:0 0;border-radius:22px;outline:none;padding:7px 14px;font-size:14px;font-weight:400;line-height:22px}.qDHVXG_renameInput:disabled{color:var(--dsw-alias-label-dimmed)}.qDHVXG_renameError{color:var(--dsw-alias-state-error-primary);margin-top:8px;font-size:12px;line-height:18px}.qDHVXG_deleteAction:not(:disabled){color:var(--dsw-alias-state-error-primary)}.qDHVXG_deleteStatus{color:var(--dsw-alias-label-secondary);font-size:12px;line-height:18px}@media (prefers-reduced-motion:reduce){.qDHVXG_wide{animation:none}.qDHVXG_search,.qDHVXG_sectionLabel,.qDHVXG_searchSlot,.qDHVXG_searchInput,.qDHVXG_headerActions{transition:none}}.qDHVXG_mergeBar{display:flex;align-items:center;gap:8px;padding:10px 12px 10px;margin-top:10px;border-top:1px solid var(--dsw-alias-interactive-bg-hover);font-weight:600}.qDHVXG_mergeHint{flex:1;min-width:0;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);font-weight:600}.qDHVXG_sessionArea{margin:8px 6px 2px;padding:2px 0 8px;border:1px solid transparent;border-radius:10px;background:rgba(245,158,11,0.07)}.qDHVXG_sessionAreaHeader{margin:0 8px 5px;padding:5px 2px 6px;border-bottom:1px solid var(--dsw-alias-border-l2);font-size:13px;font-weight:600;letter-spacing:.4px;color:var(--dsw-alias-label-secondary);display:flex;align-items:center;gap:6px}.qDHVXG_sessionUnit{position:relative;margin:0 6px;border:1px solid transparent;border-radius:10px;background:transparent;overflow:visible}.qDHVXG_sessionUnit + .qDHVXG_sessionUnit{margin-top:12px}.qDHVXG_sessionUnit .YDXeBa_sessionRow{margin:0;border:0;border-radius:0;background:transparent}.qDHVXG_sessionFilesBlock .YDXeBa_sessionRow{font-size:10px;font-style:italic;opacity:.8}.qDHVXG_gitChip{cursor:pointer;border:1px solid var(--dsw-alias-border-l2);background:rgba(245,158,11,0.10);color:var(--dsw-alias-label-primary);border-radius:10px;min-height:18px;flex:none;gap:4px;align-items:center;margin-left:auto;padding:2px 7px;font-family:var(--ds-font-family-code);font-size:10px;line-height:16px;display:inline-flex;max-width:60%;white-space:normal;word-break:break-all}.qDHVXG_gitChip:hover{border-color:var(--dsw-alias-state-warn-primary);color:var(--dsw-alias-state-warn-primary);background:rgba(245,158,11,0.16)}.qDHVXG_gitDirty{width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-state-warn-primary);flex:none}.qDHVXG_gitDot{width:6px;height:6px;border-radius:50%;flex:none}.qDHVXG_gitDotDirty{background:var(--dsw-alias-state-warn-primary)}.qDHVXG_gitDotBehind{background:var(--dsw-alias-state-business-primary)}.qDHVXG_gitDotClean{background:var(--dsw-alias-state-success-primary,#16a34a)}.qDHVXG_gitMenu{position:absolute;top:100%;left:8px;right:8px;z-index:30;box-sizing:border-box;background:var(--dsw-specific-sidebar-fill,#1d1e24);border:1px solid var(--dsw-alias-border-l2);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.45);margin-top:4px;padding:8px}.qDHVXG_gitMenuHead{display:flex;align-items:center;flex-wrap:wrap;gap:6px;color:var(--dsw-alias-label-primary);font-size:12px;font-weight:600;padding:2px 4px 6px}.qDHVXG_gitHeadBranch{min-width:0;word-break:break-all}.qDHVXG_gitMenuStatus{display:inline-flex;align-items:center;gap:4px;color:var(--dsw-alias-label-tertiary);font-size:10px;font-weight:500;margin-left:auto;white-space:nowrap}.qDHVXG_gitMenuDirty{color:var(--dsw-alias-state-warn-primary);font-size:10px;font-weight:500}.qDHVXG_gitBranchList{max-height:150px;overflow-y:auto;border-top:1px solid var(--dsw-alias-border-l2);margin-top:4px;padding-top:4px}.qDHVXG_gitBranchRow{cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:space-between;border-radius:8px;color:var(--dsw-alias-label-secondary);font-size:12px;padding:5px 8px;word-break:break-all}.qDHVXG_gitBranchRow:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}.qDHVXG_gitBranchRowActive{color:var(--dsw-alias-state-warn-primary);font-weight:600}.qDHVXG_gitRowBusy{opacity:.5;pointer-events:none}.qDHVXG_gitNewRow{display:flex;gap:6px;border-top:1px solid var(--dsw-alias-border-l2);margin-top:6px;padding-top:8px}.qDHVXG_gitInput{box-sizing:border-box;min-width:0;flex:1;height:26px;border:1px solid var(--dsw-alias-border-l2);border-radius:8px;background:transparent;color:var(--dsw-alias-label-primary);outline:none;padding:0 8px;font-size:12px}.qDHVXG_gitInput:focus{border-color:var(--dsw-alias-state-warn-primary)}.qDHVXG_gitBtn{cursor:pointer;height:26px;border:1px solid var(--dsw-alias-border-l2);border-radius:8px;background:transparent;color:var(--dsw-alias-label-primary);flex:none;align-items:center;gap:4px;padding:0 10px;font-size:12px;display:inline-flex}.qDHVXG_gitBtn:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_gitBtn:disabled{opacity:.45;cursor:default}.qDHVXG_gitMenuFoot{display:flex;gap:6px;margin-top:8px}.qDHVXG_gitOutput{white-space:pre-wrap;word-break:break-all;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover);border:1px solid var(--dsw-alias-border-l2);border-radius:8px;font-size:11px;line-height:16px;max-height:120px;overflow-y:auto;margin-top:8px;padding:6px 8px}.qDHVXG_gitDotAhead{background:#a78bfa}.qDHVXG_gitChanges{border-top:1px solid var(--dsw-alias-border-l2);margin-top:6px;padding-top:6px}.qDHVXG_gitChangesHead{color:var(--dsw-alias-label-secondary);font-size:11px;font-weight:600;padding:0 4px 4px}.qDHVXG_gitFileRow{display:flex;align-items:center;gap:6px;border-radius:8px;padding:3px 6px;cursor:pointer}.qDHVXG_gitFileRow:hover{background:var(--dsw-alias-interactive-bg-hover)}.qDHVXG_gitFileRowArmed{outline:1px solid var(--dsw-alias-state-error-primary)}.qDHVXG_gitBadge{flex:none;min-width:16px;text-align:center;border-radius:4px;background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-state-warn-primary);font-family:var(--ds-font-family-code);font-size:9px;line-height:14px;padding:0 3px}.qDHVXG_gitFileName{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dsw-alias-label-primary);font-family:var(--ds-font-family-code);font-size:11px}.qDHVXG_gitFileBtn{cursor:pointer;flex:none;height:20px;border:1px solid var(--dsw-alias-border-l2);border-radius:6px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:10px;padding:0 6px}.qDHVXG_gitFileBtn:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}.qDHVXG_gitBranchHead{color:var(--dsw-alias-label-tertiary);font-size:10px;font-weight:600;padding:4px 4px 2px}.qDHVXG_gitRemoteRow{color:var(--dsw-alias-label-tertiary);cursor:default}.qDHVXG_gitDiffBox{border-top:1px solid var(--dsw-alias-border-l2);margin-top:6px;padding-top:6px}.qDHVXG_gitDiffHead{display:flex;align-items:center;gap:6px;justify-content:space-between;color:var(--dsw-alias-label-secondary);font-size:11px;padding:0 4px 4px;word-break:break-all}.qDHVXG_gitDiffPre{white-space:pre-wrap;word-break:break-all;max-height:220px;overflow-y:auto;background:var(--dsw-alias-interactive-bg-hover);border:1px solid var(--dsw-alias-border-l2);border-radius:8px;font-family:var(--ds-font-family-code);font-size:10px;line-height:15px;margin:0;padding:6px 8px}.qDHVXG_gitPushBox{border-top:1px solid var(--dsw-alias-border-l2);margin-top:8px;padding-top:8px}.qDHVXG_gitPushHead{color:var(--dsw-alias-label-primary);font-size:12px;font-weight:600;padding:0 4px 6px}.qDHVXG_gitPushTextarea{box-sizing:border-box;width:100%;min-height:56px;resize:vertical;border:1px solid var(--dsw-alias-border-l2);border-radius:8px;background:transparent;color:var(--dsw-alias-label-primary);outline:none;font-size:12px;line-height:18px;padding:6px 8px}.qDHVXG_gitPushTextarea:focus{border-color:var(--dsw-alias-state-warn-primary)}.qDHVXG_gitPushFiles{margin-top:8px;max-height:120px;overflow-y:auto}.qDHVXG_gitPushBtns{display:flex;gap:6px;margin-top:8px}.qDHVXG_gitError{color:var(--dsw-alias-state-error-primary);font-size:11px;line-height:16px;padding:2px 4px 6px;word-break:break-all}";
 		const tagId = "@deepseek-ai/dsh-client-ui-workspace/WorkspaceBrowser.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -1117,6 +1117,24 @@ window.__ModuleLoader__.load({
 			"gitHeadBranch": "qDHVXG_gitHeadBranch",
 			"gitMenuStatus": "qDHVXG_gitMenuStatus",
 			"gitOutput": "qDHVXG_gitOutput",
+			"gitDotAhead": "qDHVXG_gitDotAhead",
+			"gitChanges": "qDHVXG_gitChanges",
+			"gitChangesHead": "qDHVXG_gitChangesHead",
+			"gitFileRow": "qDHVXG_gitFileRow",
+			"gitFileRowArmed": "qDHVXG_gitFileRowArmed",
+			"gitBadge": "qDHVXG_gitBadge",
+			"gitFileName": "qDHVXG_gitFileName",
+			"gitFileBtn": "qDHVXG_gitFileBtn",
+			"gitBranchHead": "qDHVXG_gitBranchHead",
+			"gitRemoteRow": "qDHVXG_gitRemoteRow",
+			"gitDiffBox": "qDHVXG_gitDiffBox",
+			"gitDiffHead": "qDHVXG_gitDiffHead",
+			"gitDiffPre": "qDHVXG_gitDiffPre",
+			"gitPushBox": "qDHVXG_gitPushBox",
+			"gitPushHead": "qDHVXG_gitPushHead",
+			"gitPushTextarea": "qDHVXG_gitPushTextarea",
+			"gitPushFiles": "qDHVXG_gitPushFiles",
+			"gitPushBtns": "qDHVXG_gitPushBtns",
 		};
 		//#endregion
 		//#region lib/types/client/WorkspaceBrowser.js
@@ -1617,7 +1635,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		/** The scrolling session tree; unmounting drops the sessions subscription and expand-all state. */
-		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, onOpenFile, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onWorkspaceFileRemove, onAddItemsRequest, onWorkspaceFilesDrop, onRootReselect, onRootRemove, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, gitPush, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
+		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, onOpenFile, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onWorkspaceFileRemove, onAddItemsRequest, onWorkspaceFilesDrop, onRootReselect, onRootRemove, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, gitPush, gitChanges, gitDiff, gitStageFile, gitUnstageFile, gitDiscardFile, gitPushPreview, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
 			const list = useSessions((s) => s);
 			const current = list.current;
 			const [expandedSessionGroups, setExpandedSessionGroups] = (0, react.useState)([]);
@@ -1730,14 +1748,42 @@ window.__ModuleLoader__.load({
 			const [gitNewDraft, setGitNewDraft] = (0, react.useState)("");
 			const [gitError, setGitError] = (0, react.useState)({});
 			const [gitOutputByPath, setGitOutputByPath] = (0, react.useState)({});
+			const [gitChangesByPath, setGitChangesByPath] = (0, react.useState)({});
+			const [gitDiffBox, setGitDiffBox] = (0, react.useState)(null);
+			const [gitDiscardArm, setGitDiscardArm] = (0, react.useState)(null);
+			const [gitPushPreviewState, setGitPushPreviewState] = (0, react.useState)(null);
+			const [gitPushDraft, setGitPushDraft] = (0, react.useState)("");
 			const [gitRefreshKey, setGitRefreshKey] = (0, react.useState)(0);
-			const refreshGit = (path) => {
+			const refreshGit = (path, force) => {
 				setGitError((previous) => ({ ...previous, [path]: null }));
-				gitInfo(path).then((info) => {
+				gitInfo(path, force === true).then((info) => {
 					setGitByPath((previous) => ({ ...previous, [path]: info }));
+					gitChanges(path).then((value) => {
+						setGitChangesByPath((previous) => ({ ...previous, [path]: value.files }));
+					}, () => {});
 				}, (error) => {
 					setGitByPath((previous) => ({ ...previous, [path]: { repo: false, branch: null, branches: [], dirty: false } }));
 					setGitError((previous) => ({ ...previous, [path]: error instanceof Error ? error.message : String(error) }));
+				});
+			};
+
+			const openGitDiff = (path, file) => {
+				setGitDiffBox({ path, file, diff: "" });
+				gitDiff(path, file).then((value) => {
+					setGitDiffBox((previous) => previous !== null && previous.path === path && previous.file === file ? { path, file, diff: value.diff } : previous);
+				}, (error) => {
+					setGitDiffBox({ path, file, diff: error instanceof Error ? error.message : String(error) });
+				});
+			};
+			const openGitPushPreview = (path) => {
+				setGitPushPreviewState({ path, message: "", files: [] });
+				setGitPushDraft("");
+				gitPushPreview(path).then((value) => {
+					setGitPushPreviewState({ path, message: value.message, files: value.files });
+					setGitPushDraft(value.message);
+				}, (error) => {
+					setGitError((previous) => ({ ...previous, [path]: error instanceof Error ? error.message : String(error) }));
+					setGitPushPreviewState(null);
 				});
 			};
 			const runGitOp = (path, op) => {
@@ -1747,6 +1793,7 @@ window.__ModuleLoader__.load({
 					setGitNewDraft("");
 					setGitOutputByPath((previous) => ({ ...previous, [path]: typeof result?.output === "string" ? result.output : "" }));
 					refreshGit(path);
+					setGitDiscardArm(null);
 					setGitRefreshKey((key) => key + 1);
 				}, (error) => {
 					setGitBusyPath(null);
@@ -2015,7 +2062,7 @@ window.__ModuleLoader__.load({
 														children: [
 															(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconBranchOutline16, { size: 12 }),
 															gitByPath[root.path].branch ?? t("git.none"),
-															(0, react_jsx_runtime.jsx)("span", { className: clsx(WorkspaceBrowser_module_css_default.gitDot, gitByPath[root.path].dirty === true ? WorkspaceBrowser_module_css_default.gitDotDirty : gitByPath[root.path].behind === true ? WorkspaceBrowser_module_css_default.gitDotBehind : WorkspaceBrowser_module_css_default.gitDotClean), title: gitByPath[root.path].dirty === true ? t("git.dirty") : gitByPath[root.path].behind === true ? t("git.behind") : t("git.clean") })
+															(0, react_jsx_runtime.jsx)("span", { className: clsx(WorkspaceBrowser_module_css_default.gitDot, gitByPath[root.path].dirty === true ? WorkspaceBrowser_module_css_default.gitDotDirty : gitByPath[root.path].behind > 0 ? WorkspaceBrowser_module_css_default.gitDotBehind : gitByPath[root.path].ahead > 0 ? WorkspaceBrowser_module_css_default.gitDotAhead : WorkspaceBrowser_module_css_default.gitDotClean), title: gitByPath[root.path].dirty === true ? t("git.dirty") : gitByPath[root.path].behind > 0 ? t("git.behind") : gitByPath[root.path].ahead > 0 ? t("git.ahead") : t("git.clean") })
 														]
 													}),
 													gitMenuPath === root.path && (0, react_jsx_runtime.jsxs)("div", {
@@ -2029,13 +2076,80 @@ window.__ModuleLoader__.load({
 																children: [
 																	(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconBranchOutline16, { size: 14 }),
 																	(0, react_jsx_runtime.jsx)("span", { className: WorkspaceBrowser_module_css_default.gitHeadBranch, children: gitByPath[root.path]?.branch ?? t("git.none") }),
-																	(0, react_jsx_runtime.jsxs)("span", { className: WorkspaceBrowser_module_css_default.gitMenuStatus, children: [(0, react_jsx_runtime.jsx)("span", { className: clsx(WorkspaceBrowser_module_css_default.gitDot, gitByPath[root.path]?.dirty === true ? WorkspaceBrowser_module_css_default.gitDotDirty : gitByPath[root.path]?.behind === true ? WorkspaceBrowser_module_css_default.gitDotBehind : WorkspaceBrowser_module_css_default.gitDotClean) }), gitByPath[root.path]?.dirty === true ? t("git.dirty") : gitByPath[root.path]?.behind === true ? t("git.behind") : t("git.clean")] })
+																	(0, react_jsx_runtime.jsxs)("span", { className: WorkspaceBrowser_module_css_default.gitMenuStatus, children: [(0, react_jsx_runtime.jsx)("span", { className: clsx(WorkspaceBrowser_module_css_default.gitDot, gitByPath[root.path]?.dirty === true ? WorkspaceBrowser_module_css_default.gitDotDirty : gitByPath[root.path]?.behind > 0 ? WorkspaceBrowser_module_css_default.gitDotBehind : gitByPath[root.path]?.ahead > 0 ? WorkspaceBrowser_module_css_default.gitDotAhead : WorkspaceBrowser_module_css_default.gitDotClean) }), gitByPath[root.path]?.dirty === true ? t("git.dirty") : gitByPath[root.path]?.behind > 0 ? t("git.behind") : gitByPath[root.path]?.ahead > 0 ? t("git.ahead") : t("git.clean")] })
 																]
 															}),
 															gitError[root.path] !== void 0 && gitError[root.path] !== null && (0, react_jsx_runtime.jsx)("div", { className: WorkspaceBrowser_module_css_default.gitError, children: gitError[root.path] }),
-															(0, react_jsx_runtime.jsx)("div", {
+															gitChangesByPath[root.path]?.length > 0 && (0, react_jsx_runtime.jsxs)("div", {
+																className: WorkspaceBrowser_module_css_default.gitChanges,
+																children: [
+																	(0, react_jsx_runtime.jsx)("div", { className: WorkspaceBrowser_module_css_default.gitChangesHead, children: t("git.changes") + " " + gitChangesByPath[root.path].length }),
+																	...gitChangesByPath[root.path].map((entry) => {
+																		const xy = entry.status;
+																		const staged = xy[0] !== " " && xy[0] !== "?";
+																		const worktree = xy[1] !== " " && xy[1] !== "?";
+																		const untracked = xy === "??";
+																		return (0, react_jsx_runtime.jsxs)("div", {
+																			className: clsx(WorkspaceBrowser_module_css_default.gitFileRow, gitDiscardArm !== null && gitDiscardArm.path === root.path && gitDiscardArm.file === entry.file && WorkspaceBrowser_module_css_default.gitFileRowArmed),
+																			onClick: () => {
+																				openGitDiff(root.path, entry.file);
+																			},
+																			children: [
+																				(0, react_jsx_runtime.jsx)("span", { className: WorkspaceBrowser_module_css_default.gitBadge, children: entry.status }),
+																				(0, react_jsx_runtime.jsx)("span", { className: WorkspaceBrowser_module_css_default.gitFileName, children: entry.file }),
+																				(worktree || untracked) && (0, react_jsx_runtime.jsx)("button", {
+																					type: "button",
+																					className: WorkspaceBrowser_module_css_default.gitFileBtn,
+																					disabled: gitBusyPath !== null,
+																					onClick: (e) => {
+																						e.stopPropagation();
+																						runGitOp(root.path, () => gitStageFile(root.path, entry.file));
+																					},
+																					children: t("git.stage")
+																				}),
+																				staged && (0, react_jsx_runtime.jsx)("button", {
+																					type: "button",
+																					className: WorkspaceBrowser_module_css_default.gitFileBtn,
+																					disabled: gitBusyPath !== null,
+																					onClick: (e) => {
+																						e.stopPropagation();
+																						runGitOp(root.path, () => gitUnstageFile(root.path, entry.file));
+																					},
+																					children: t("git.unstage")
+																				}),
+																				!untracked && (0, react_jsx_runtime.jsx)("button", {
+																					type: "button",
+																					className: WorkspaceBrowser_module_css_default.gitFileBtn,
+																					disabled: gitBusyPath !== null,
+																					onClick: (e) => {
+																						e.stopPropagation();
+																						if (gitDiscardArm !== null && gitDiscardArm.path === root.path && gitDiscardArm.file === entry.file) {
+																							setGitDiscardArm(null);
+																							runGitOp(root.path, () => gitDiscardFile(root.path, entry.file));
+																						} else {
+																							setGitDiscardArm({ path: root.path, file: entry.file });
+																							setTimeout(() => {
+																								setGitDiscardArm((previous) => previous !== null && previous.path === root.path && previous.file === entry.file ? null : previous);
+																							}, 4000);
+																						}
+																					},
+																					children: gitDiscardArm !== null && gitDiscardArm.path === root.path && gitDiscardArm.file === entry.file ? t("git.discardConfirm") : t("git.discard")
+																				})
+																			]
+																		}, root.path + ":" + entry.file);
+																	})
+																]
+															}),
+															gitDiffBox !== null && gitDiffBox.path === root.path && (0, react_jsx_runtime.jsxs)("div", {
+																className: WorkspaceBrowser_module_css_default.gitDiffBox,
+																children: [
+																	(0, react_jsx_runtime.jsxs)("div", { className: WorkspaceBrowser_module_css_default.gitDiffHead, children: [gitDiffBox.file, (0, react_jsx_runtime.jsx)("button", { type: "button", className: WorkspaceBrowser_module_css_default.gitBtn, onClick: () => { setGitDiffBox(null); }, children: t("git.close") })] }),
+																	(0, react_jsx_runtime.jsx)("pre", { className: WorkspaceBrowser_module_css_default.gitDiffPre, children: gitDiffBox.diff === "" ? t("git.loadingDiff") : gitDiffBox.diff })
+																]
+															}),
+															(0, react_jsx_runtime.jsxs)("div", {
 																className: clsx(WorkspaceBrowser_module_css_default.gitBranchList, gitBusyPath === root.path && WorkspaceBrowser_module_css_default.gitRowBusy),
-																children: (gitByPath[root.path]?.branches ?? []).map((branch) => (0, react_jsx_runtime.jsxs)("div", {
+																children: [(gitByPath[root.path]?.branches ?? []).length > 0 && (0, react_jsx_runtime.jsx)("div", { className: WorkspaceBrowser_module_css_default.gitBranchHead, children: t("git.localBranches") }), ...(gitByPath[root.path]?.branches ?? []).map((branch) => (0, react_jsx_runtime.jsxs)("div", {
 																	className: clsx(WorkspaceBrowser_module_css_default.gitBranchRow, branch === gitByPath[root.path]?.branch && WorkspaceBrowser_module_css_default.gitBranchRowActive),
 																	role: "button",
 																	title: t("git.switch") + ": " + branch,
@@ -2044,7 +2158,7 @@ window.__ModuleLoader__.load({
 																		runGitOp(root.path, () => gitSwitchBranch(root.path, branch));
 																	},
 																	children: [branch, branch === gitByPath[root.path]?.branch && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutline16, { size: 12 })]
-																}, branch))
+																}, branch)), (gitByPath[root.path]?.remoteBranches ?? []).length > 0 && (0, react_jsx_runtime.jsx)("div", { className: WorkspaceBrowser_module_css_default.gitBranchHead, children: t("git.remoteBranches") }), ...(gitByPath[root.path]?.remoteBranches ?? []).map((branch) => (0, react_jsx_runtime.jsx)("div", { className: clsx(WorkspaceBrowser_module_css_default.gitBranchRow, WorkspaceBrowser_module_css_default.gitRemoteRow), children: branch }, "r-" + branch))]
 															}),
 															(0, react_jsx_runtime.jsxs)("div", {
 																className: WorkspaceBrowser_module_css_default.gitNewRow,
@@ -2090,12 +2204,34 @@ window.__ModuleLoader__.load({
 																		className: WorkspaceBrowser_module_css_default.gitBtn,
 																		disabled: gitBusyPath !== null,
 																		onClick: () => {
-																			runGitOp(root.path, () => gitPush(root.path));
+																			openGitPushPreview(root.path);
 																		},
 																		children: t("git.push")
 																	})
 															]}),
-																		gitOutputByPath[root.path] !== void 0 && gitOutputByPath[root.path] !== "" && (0, react_jsx_runtime.jsx)("div", { className: WorkspaceBrowser_module_css_default.gitOutput, children: gitOutputByPath[root.path] })
+																	(0, react_jsx_runtime.jsx)("button", {
+																		type: "button",
+																		className: WorkspaceBrowser_module_css_default.gitBtn,
+																		disabled: gitBusyPath !== null,
+																		onClick: () => {
+																			setGitOutputByPath((previous) => ({ ...previous, [root.path]: "" }));
+																			refreshGit(root.path, true);
+																		},
+																		children: t("git.refresh")
+																	}),
+																		gitOutputByPath[root.path] !== void 0 && gitOutputByPath[root.path] !== "" && (0, react_jsx_runtime.jsx)("div", { className: WorkspaceBrowser_module_css_default.gitOutput, children: gitOutputByPath[root.path] }),
+																		gitPushPreviewState !== null && gitPushPreviewState.path === root.path && (0, react_jsx_runtime.jsxs)("div", {
+																			className: WorkspaceBrowser_module_css_default.gitPushBox,
+																			children: [
+																				(0, react_jsx_runtime.jsx)("div", { className: WorkspaceBrowser_module_css_default.gitPushHead, children: t("git.pushPreview") }),
+																				(0, react_jsx_runtime.jsx)("textarea", { className: WorkspaceBrowser_module_css_default.gitPushTextarea, value: gitPushDraft, disabled: gitBusyPath !== null, onChange: (e) => { setGitPushDraft(e.target.value); } }),
+																				gitPushPreviewState.files.length > 0 && (0, react_jsx_runtime.jsxs)("div", { className: WorkspaceBrowser_module_css_default.gitPushFiles, children: [t("git.pushFiles") + " (" + gitPushPreviewState.files.length + ")", ...gitPushPreviewState.files.map((entry) => (0, react_jsx_runtime.jsxs)("div", { className: WorkspaceBrowser_module_css_default.gitFileRow, children: [(0, react_jsx_runtime.jsx)("span", { className: WorkspaceBrowser_module_css_default.gitBadge, children: entry.status }), (0, react_jsx_runtime.jsx)("span", { className: WorkspaceBrowser_module_css_default.gitFileName, children: entry.file })] }, "p-" + entry.file))] }),
+																				(0, react_jsx_runtime.jsxs)("div", { className: WorkspaceBrowser_module_css_default.gitPushBtns, children: [
+																					(0, react_jsx_runtime.jsx)("button", { type: "button", className: WorkspaceBrowser_module_css_default.gitBtn, disabled: gitBusyPath !== null || gitPushDraft.trim() === "", onClick: () => { const draft = gitPushDraft.trim(); setGitPushPreviewState(null); runGitOp(root.path, () => gitPush(root.path, draft)); }, children: t("git.confirmPush") }),
+																					(0, react_jsx_runtime.jsx)("button", { type: "button", className: WorkspaceBrowser_module_css_default.gitBtn, disabled: gitBusyPath !== null, onClick: () => { setGitPushPreviewState(null); }, children: t("git.cancel") })
+																				] })
+																			]
+																		})
 														]
 													}),
 													root.removable === true && (0, react_jsx_runtime.jsx)("button", {
@@ -2860,7 +2996,7 @@ window.__ModuleLoader__.load({
 		* @param props - composed slot props (shell owner share + store + injected actions).
 		* @returns the region element tree.
 		*/
-		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, readFile, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, addWorkspaceFiles, removeWorkspaceFile, importWorkspaceFiles, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, gitPush, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
+		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, readFile, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, addWorkspaceFiles, removeWorkspaceFile, importWorkspaceFiles, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, gitPush, gitChanges, gitDiff, gitStageFile, gitUnstageFile, gitDiscardFile, gitPushPreview, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
 			const sessionList = useSessions((state) => state);
 			const workspaces = useWorkspaces((state) => state.items);
 			const workspacePhase = useWorkspaces((state) => state.phase);
@@ -3406,6 +3542,12 @@ window.__ModuleLoader__.load({
 							gitCreateBranch,
 							gitPull,
 							gitPush,
+							gitChanges,
+							gitDiff,
+							gitStageFile,
+							gitUnstageFile,
+							gitDiscardFile,
+							gitPushPreview,
 							mergeMode,
 							mergeSelected,
 							onToggleMergeSession: (id) => {
@@ -3929,6 +4071,21 @@ window.__ModuleLoader__.load({
 			"git.dirty": "有未提交的修改",
 			"git.behind": "有未更新",
 			"git.clean": "与远程一致",
+			"git.ahead": "有未推送的提交",
+			"git.changes": "变更",
+			"git.stage": "暂存",
+			"git.unstage": "取消暂存",
+			"git.discard": "丢弃",
+			"git.discardConfirm": "再点一次确认丢弃",
+			"git.close": "关闭",
+			"git.refresh": "刷新",
+			"git.pushPreview": "推送预览",
+			"git.confirmPush": "确认推送",
+			"git.cancel": "取消",
+			"git.pushFiles": "将提交并推送的文件",
+			"git.loadingDiff": "加载差异…",
+			"git.localBranches": "本地分支",
+			"git.remoteBranches": "远程分支",
 			"git.failed": "Git 操作失败"
 		};
 		/** English dictionary, checked complete against the zh key set. */
@@ -4034,6 +4191,21 @@ window.__ModuleLoader__.load({
 			"git.dirty": "Uncommitted changes",
 			"git.behind": "Updates available",
 			"git.clean": "Up to date",
+			"git.ahead": "Unpushed commits",
+			"git.changes": "Changes",
+			"git.stage": "Stage",
+			"git.unstage": "Unstage",
+			"git.discard": "Discard",
+			"git.discardConfirm": "Click again to confirm discard",
+			"git.close": "Close",
+			"git.refresh": "Refresh",
+			"git.pushPreview": "Push preview",
+			"git.confirmPush": "Confirm push",
+			"git.cancel": "Cancel",
+			"git.pushFiles": "Files to commit & push",
+			"git.loadingDiff": "Loading diff…",
+			"git.localBranches": "Local branches",
+			"git.remoteBranches": "Remote branches",
 			"git.failed": "Git operation failed"
 		};
 		//#endregion
@@ -4126,7 +4298,13 @@ window.__ModuleLoader__.load({
 				gitSwitchBranch: (path, branch) => ctx.workspaces.gitSwitchBranch(path, branch),
 				gitCreateBranch: (path, name) => ctx.workspaces.gitCreateBranch(path, name),
 				gitPull: (path) => ctx.workspaces.gitPull(path),
-				gitPush: (path) => ctx.workspaces.gitPush(path),
+				gitPush: (path, message) => ctx.workspaces.gitPush(path, message),
+				gitChanges: (path) => ctx.workspaces.gitChanges(path),
+				gitDiff: (path, file) => ctx.workspaces.gitDiff(path, file),
+				gitStageFile: (path, file) => ctx.workspaces.gitStageFile(path, file),
+				gitUnstageFile: (path, file) => ctx.workspaces.gitUnstageFile(path, file),
+				gitDiscardFile: (path, file) => ctx.workspaces.gitDiscardFile(path, file),
+				gitPushPreview: (path) => ctx.workspaces.gitPushPreview(path),
 				mergeSessions: async (workspaceId, sessionIds) => {
 					return await ctx.sessions.merge({
 						workspaceId,

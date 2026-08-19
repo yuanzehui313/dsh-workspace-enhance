@@ -3401,11 +3401,13 @@ function createApiProxy(ctx, defaults) {
 					const canonical = resolve(request.payload.path);
 					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
 					const repo = await isGitRepo(canonical);
-					if (!repo) return ok(request, { repo: false, branch: null, branches: [], dirty: false, behind: false });
+					if (!repo) return ok(request, { repo: false, branch: null, branches: [], remoteBranches: [], dirty: false, behind: 0, ahead: 0 });
 					const branch = await gitBranch(canonical);
 					const branches = (await runGit(canonical, ["branch", "--format=%(refname:short)"])).split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+					const remoteBranches = (await runGit(canonical, ["branch", "-r", "--format=%(refname:short)"])).split(/\r?\n/).map((s) => s.trim()).filter((s) => s !== "" && s !== "origin/HEAD");
 					const dirty = (await runGit(canonical, ["status", "--porcelain"])).trim().length > 0;
-					return ok(request, { repo: true, branch, branches, dirty, behind: await gitBehind(canonical) });
+					const sync = await gitSyncCounts(canonical, request.payload.force === true);
+					return ok(request, { repo: true, branch, branches, remoteBranches, dirty, behind: sync.behind, ahead: sync.ahead });
 				} catch (error) {
 					return err(request, { code: "internal", message: `git info failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
@@ -3448,11 +3450,12 @@ function createApiProxy(ctx, defaults) {
 				try {
 					const canonical = resolve(request.payload.path);
 					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const supplied = typeof request.payload.message === "string" ? request.payload.message.trim().slice(0, 120) : "";
 					let commitMessage = "";
 					const dirty = (await runGit(canonical, ["status", "--porcelain"])).trim().length > 0;
 					if (dirty) {
 						await runGit(canonical, ["add", "-A"]);
-						commitMessage = await generateCommitMessage(canonical);
+						commitMessage = supplied || await generateCommitMessage(canonical, true);
 						await runGit(canonical, ["commit", "-m", commitMessage]);
 					}
 					const pushOut = (await runGit(canonical, ["push"], 60000)).trim().slice(0, 800);
@@ -3460,6 +3463,83 @@ function createApiProxy(ctx, defaults) {
 					return ok(request, { branch, output: commitMessage ? `已提交并推送：${commitMessage}\n${pushOut}` : pushOut });
 				} catch (error) {
 					return err(request, { code: "internal", message: `git push failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitChanges(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const files = await gitStatusFiles(canonical);
+					return ok(request, { files });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git changes failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitDiff(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const files = await gitStatusFiles(canonical);
+					const target = files.find((entry) => entry.file === request.payload.file);
+					let diff;
+					if (target !== void 0 && target.status === "??") {
+						const abs = resolve(join(canonical, request.payload.file));
+						if (!abs.startsWith(canonical)) throw new Error("file escapes the repository");
+						const content = await readFile(abs, "utf8").catch(() => "");
+						diff = "新增文件（未跟踪）\n" + content.split(/\r?\n/).slice(0, 400).map((line) => "+" + line).join("\n");
+					} else {
+						diff = (await runGit(canonical, ["diff", "--", request.payload.file], 15000)).trim();
+						if (!diff) diff = (await runGit(canonical, ["diff", "--cached", "--", request.payload.file], 15000)).trim();
+						if (!diff) diff = "（无差异）";
+					}
+					return ok(request, { diff: diff.slice(0, 20000) });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git diff failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitStageFile(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					await runGit(canonical, ["add", "--", request.payload.file]);
+					return ok(request, { ok: true });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git stage failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitUnstageFile(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					await runGit(canonical, ["restore", "--staged", "--", request.payload.file]);
+					return ok(request, { ok: true });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git unstage failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitDiscardFile(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const files = await gitStatusFiles(canonical);
+					const target = files.find((entry) => entry.file === request.payload.file);
+					if (target !== void 0 && target.status === "??") return err(request, { code: "internal", message: "新增（未跟踪）文件请手动删除，丢弃仅作用于已跟踪文件的修改", details: {} });
+					await runGit(canonical, ["restore", "--source=HEAD", "--staged", "--worktree", "--", request.payload.file]);
+					return ok(request, { ok: true });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git discard failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitPushPreview(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const files = await gitStatusFiles(canonical);
+					const sync = await gitSyncCounts(canonical, true);
+					const message = await generateCommitMessage(canonical, false);
+					return ok(request, { message, files, ahead: sync.ahead });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git push preview failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
 			},
 			async importFiles(request) {
@@ -4830,9 +4910,9 @@ const workspaceInsertSessionBeforeRequestSchema = z$1.object({
 /** workspace.insertSessionBefore response value. */
 const workspaceInsertSessionBeforeValueSchema = z$1.object({ workspace: workspaceViewSchema });
 /** workspace.gitInfo request payload: absolute folder path. */
-const workspaceGitInfoRequestSchema = z$1.object({ path: z$1.string() });
+const workspaceGitInfoRequestSchema = z$1.object({ path: z$1.string(), force: z$1.boolean().optional() });
 /** workspace.gitInfo response value. */
-const workspaceGitInfoValueSchema = z$1.object({ repo: z$1.boolean(), branch: z$1.string().nullable(), branches: z$1.array(z$1.string()), dirty: z$1.boolean(), behind: z$1.boolean() });
+const workspaceGitInfoValueSchema = z$1.object({ repo: z$1.boolean(), branch: z$1.string().nullable(), branches: z$1.array(z$1.string()), remoteBranches: z$1.array(z$1.string()), dirty: z$1.boolean(), behind: z$1.number(), ahead: z$1.number() });
 /** workspace.gitSwitchBranch request payload. */
 const workspaceGitSwitchBranchRequestSchema = z$1.object({ path: z$1.string(), branch: z$1.string() });
 /** workspace.gitSwitchBranch response value. */
@@ -4846,9 +4926,33 @@ const workspaceGitPullRequestSchema = z$1.object({ path: z$1.string() });
 /** workspace.gitPull response value. */
 const workspaceGitPullValueSchema = z$1.object({ branch: z$1.string(), output: z$1.string() });
 /** workspace.gitPush request payload. */
-const workspaceGitPushRequestSchema = z$1.object({ path: z$1.string() });
+const workspaceGitPushRequestSchema = z$1.object({ path: z$1.string(), message: z$1.string().optional() });
 /** workspace.gitPush response value. */
 const workspaceGitPushValueSchema = z$1.object({ branch: z$1.string(), output: z$1.string() });
+/** workspace.gitChanges request payload. */
+const workspaceGitChangesRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitChanges response value. */
+const workspaceGitChangesValueSchema = z$1.object({ files: z$1.array(z$1.object({ file: z$1.string(), status: z$1.string() })) });
+/** workspace.gitDiff request payload. */
+const workspaceGitDiffRequestSchema = z$1.object({ path: z$1.string(), file: z$1.string() });
+/** workspace.gitDiff response value. */
+const workspaceGitDiffValueSchema = z$1.object({ diff: z$1.string() });
+/** workspace.gitStageFile request payload. */
+const workspaceGitStageFileRequestSchema = z$1.object({ path: z$1.string(), file: z$1.string() });
+/** workspace.gitStageFile response value. */
+const workspaceGitStageFileValueSchema = z$1.object({ ok: z$1.boolean() });
+/** workspace.gitUnstageFile request payload. */
+const workspaceGitUnstageFileRequestSchema = z$1.object({ path: z$1.string(), file: z$1.string() });
+/** workspace.gitUnstageFile response value. */
+const workspaceGitUnstageFileValueSchema = z$1.object({ ok: z$1.boolean() });
+/** workspace.gitDiscardFile request payload. */
+const workspaceGitDiscardFileRequestSchema = z$1.object({ path: z$1.string(), file: z$1.string() });
+/** workspace.gitDiscardFile response value. */
+const workspaceGitDiscardFileValueSchema = z$1.object({ ok: z$1.boolean() });
+/** workspace.gitPushPreview request payload. */
+const workspaceGitPushPreviewRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitPushPreview response value. */
+const workspaceGitPushPreviewValueSchema = z$1.object({ message: z$1.string(), files: z$1.array(z$1.object({ file: z$1.string(), status: z$1.string() })), ahead: z$1.number() });
 /** 校验绝对路径是否落在任一工作区根目录内（Windows 大小写不敏感）。 */
 function isInsideWorkspaceRoots(ctx, canonical) {
 	return ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
@@ -4887,23 +4991,29 @@ async function gitBranch(dir) {
 const GIT_FETCH_THROTTLE_MS = 5 * 60 * 1000;
 const gitFetchTimes = new Map();
 /** 本地是否落后于上游（先静默 fetch 刷新远端引用，失败则用缓存引用；无上游视为未落后）。 */
-	async function gitBehind(dir) {
+	/** 统计本地相对上游的领先/落后提交数（force 时强制 fetch，否则按限流节流；无上游全 0）。 */
+	async function gitSyncCounts(dir, force) {
 		try {
 			const upstream = (await runGit(dir, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"], 15000)).trim();
-			if (!upstream) return false;
+			if (!upstream) return { ahead: 0, behind: 0, upstream: null };
 			const now = Date.now();
 			const lastFetch = gitFetchTimes.get(dir) ?? 0;
-			if (now - lastFetch >= GIT_FETCH_THROTTLE_MS) {
+			if (force === true || now - lastFetch >= GIT_FETCH_THROTTLE_MS) {
 				try {
 					await runGit(dir, ["fetch", "--quiet"], 15000);
 					gitFetchTimes.set(dir, now);
 				} catch {}
 			}
 			const counts = (await runGit(dir, ["rev-list", "--left-right", "--count", "HEAD..." + upstream], 15000)).trim().split(/\s+/).filter(Boolean);
-			return Number(counts[1] ?? 0) > 0;
+			return { ahead: Number(counts[0] ?? 0), behind: Number(counts[1] ?? 0), upstream };
 		} catch {
-			return false;
+			return { ahead: 0, behind: 0, upstream: null };
 		}
+	}
+	/** 本地是否落后于上游（无上游视为未落后）。 */
+	async function gitBehind(dir) {
+		const sync = await gitSyncCounts(dir, false);
+		return sync.behind > 0;
 	}
 
 	/** 读取智谱 GLM API Key（宿主 ~/.mcp.json 的 glm4v-vision 服务，无则空串）。 */
@@ -4917,12 +5027,12 @@ const gitFetchTimes = new Map();
 		}
 	}
 	/** 用 AI 根据暂存区改动生成中文 Conventional Commits 提交信息；失败回退为固定文案。 */
-	async function generateCommitMessage(dir) {
+	async function generateCommitMessage(dir, staged = true) {
 		try {
 			const key = await readGlmKey();
 			if (!key) throw new Error("no GLM key");
-			const stat = (await runGit(dir, ["diff", "--cached", "--stat"], 15000)).trim().slice(0, 2000);
-			const diff = (await runGit(dir, ["diff", "--cached"], 15000)).trim().slice(0, 6000);
+			const stat = (await runGit(dir, staged ? ["diff", "--cached", "--stat"] : ["diff", "HEAD", "--stat"], 15000)).trim().slice(0, 2000);
+			const diff = (await runGit(dir, staged ? ["diff", "--cached"] : ["diff", "HEAD"], 15000)).trim().slice(0, 6000);
 			const branch = (await runGit(dir, ["rev-parse", "--abbrev-ref", "HEAD"], 15000)).trim();
 			const prompt = `根据下面的 git 改动生成一条中文提交信息：要求符合 Conventional Commits 规范（如 fix(模块): 描述、feat(模块): 描述），只输出一行，60 字以内，描述清楚这次代码修复/改动的内容。当前分支: ${branch}\n--- git diff --cached --stat ---\n${stat}\n--- git diff --cached（截断）---\n${diff}`;
 			const resp = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
@@ -4939,6 +5049,19 @@ const gitFetchTimes = new Map();
 		} catch (error) {
 			return "auto: update code (" + new Date().toISOString().slice(0, 10) + ")";
 		}
+	}
+
+	/** 解析 git status --porcelain 为 [{ file, status }]（重命名取新路径）。 */
+	async function gitStatusFiles(dir) {
+		const raw = (await runGit(dir, ["status", "--porcelain"], 15000)).trim();
+		if (!raw) return [];
+		return raw.split(/\r?\n/).map((line) => {
+			const status = line.slice(0, 2).trim();
+			let file = line.slice(3).trim();
+			const arrow = file.indexOf(" -> ");
+			if (arrow >= 0) file = file.slice(arrow + 4).trim();
+			return { file, status };
+		}).filter((entry) => entry.file !== "");
 	}
 
 /** workspace.setAdditionalPaths request payload: the workspace plus its complete additional root list. */
@@ -5479,6 +5602,30 @@ const UNARY_ROUTES = {
 	"workspace.gitPush": {
 		schema: workspaceGitPushRequestSchema,
 		invoke: (api, r) => api.workspace.gitPush(r)
+	},
+	"workspace.gitChanges": {
+		schema: workspaceGitChangesRequestSchema,
+		invoke: (api, r) => api.workspace.gitChanges(r)
+	},
+	"workspace.gitDiff": {
+		schema: workspaceGitDiffRequestSchema,
+		invoke: (api, r) => api.workspace.gitDiff(r)
+	},
+	"workspace.gitStageFile": {
+		schema: workspaceGitStageFileRequestSchema,
+		invoke: (api, r) => api.workspace.gitStageFile(r)
+	},
+	"workspace.gitUnstageFile": {
+		schema: workspaceGitUnstageFileRequestSchema,
+		invoke: (api, r) => api.workspace.gitUnstageFile(r)
+	},
+	"workspace.gitDiscardFile": {
+		schema: workspaceGitDiscardFileRequestSchema,
+		invoke: (api, r) => api.workspace.gitDiscardFile(r)
+	},
+	"workspace.gitPushPreview": {
+		schema: workspaceGitPushPreviewRequestSchema,
+		invoke: (api, r) => api.workspace.gitPushPreview(r)
 	},
 	"workspace.importFiles": {
 		schema: workspaceImportFilesRequestSchema,

@@ -9724,8 +9724,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				return result;
 			}
 			/** 文件夹 git 信息（是否仓库/当前分支/分支列表/是否脏）。 */
-			async gitInfo(path) {
-				const response = await this.api.workspace.gitInfo({ path });
+			async gitInfo(path, force = false) {
+				const response = await this.api.workspace.gitInfo({ path, force: force === true });
 				if (!response.result.ok) throw new Error(response.result.error.message);
 				return response.result.value;
 			}
@@ -9749,8 +9749,47 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			}
 
 			/** 推送文件夹当前分支到上游（git push）。 */
-			async gitPush(path) {
-				const response = await this.api.workspace.gitPush({ path });
+			async gitPush(path, message) {
+				const payload = { path };
+				if (typeof message === "string" && message.trim() !== "") payload.message = message.trim();
+				const response = await this.api.workspace.gitPush(payload);
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+
+			/** 文件夹 git 变更文件列表（status --porcelain 解析结果）。 */
+			async gitChanges(path) {
+				const response = await this.api.workspace.gitChanges({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 单个文件的 git diff 文本。 */
+			async gitDiff(path, file) {
+				const response = await this.api.workspace.gitDiff({ path, file });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 暂存单个文件。 */
+			async gitStageFile(path, file) {
+				const response = await this.api.workspace.gitStageFile({ path, file });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 取消暂存单个文件。 */
+			async gitUnstageFile(path, file) {
+				const response = await this.api.workspace.gitUnstageFile({ path, file });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 丢弃单个已跟踪文件的修改（回到 HEAD）。 */
+			async gitDiscardFile(path, file) {
+				const response = await this.api.workspace.gitDiscardFile({ path, file });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 推送预览：AI 提交信息 + 变更文件 + 领先提交数。 */
+			async gitPushPreview(path) {
+				const response = await this.api.workspace.gitPushPreview({ path });
 				if (!response.result.ok) throw new Error(response.result.error.message);
 				return response.result.value;
 			}
@@ -10253,8 +10292,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				return response.result.value;
 			}
 			/** 文件夹 git 信息（是否仓库/当前分支/分支列表/是否脏）。 */
-			async gitInfo(path) {
-				return await this.manager.gitInfo(path);
+			async gitInfo(path, force = false) {
+				return await this.manager.gitInfo(path, force);
 			}
 			/** 切换文件夹的 git 分支。 */
 			async gitSwitchBranch(path, branch) {
@@ -10270,8 +10309,27 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			}
 
 			/** 推送文件夹当前分支到上游（git push）。 */
-			async gitPush(path) {
-				return await this.manager.gitPush(path);
+			async gitPush(path, message) {
+				return await this.manager.gitPush(path, message);
+			}
+
+			async gitChanges(path) {
+				return await this.manager.gitChanges(path);
+			}
+			async gitDiff(path, file) {
+				return await this.manager.gitDiff(path, file);
+			}
+			async gitStageFile(path, file) {
+				return await this.manager.gitStageFile(path, file);
+			}
+			async gitUnstageFile(path, file) {
+				return await this.manager.gitUnstageFile(path, file);
+			}
+			async gitDiscardFile(path, file) {
+				return await this.manager.gitDiscardFile(path, file);
+			}
+			async gitPushPreview(path) {
+				return await this.manager.gitPushPreview(path);
 			}
 			/**
 			* Create one child directory through the Host's `browse` capability.
