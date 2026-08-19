@@ -9818,6 +9818,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				if (!response.result.ok) throw new Error(response.result.error.message);
 				return response.result.value;
 			}
+
+			/** 写回工作区根内的文本文件（≤1MB）。 */
+			async writeFile(path, content) {
+				const response = await this.api.workspace.writeFile({ path, content });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
 			/** Upload file bytes into the workspace's .dsh-uploads directory and mount them as public files. */
 			async importFiles(workspaceId, files) {
 				const { result } = await this.api.workspace.importFiles({
@@ -10368,6 +10375,10 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			}
 			async gitStashPop(path) {
 				return await this.manager.gitStashPop(path);
+			}
+
+			async writeFile(path, content) {
+				return await this.manager.writeFile(path, content);
 			}
 			/**
 			* Create one child directory through the Host's `browse` capability.

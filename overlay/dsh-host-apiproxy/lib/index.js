@@ -3590,6 +3590,18 @@ function createApiProxy(ctx, defaults) {
 					return err(request, { code: "internal", message: `git stash pop failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
 			},
+			async writeFile(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `write path is outside every workspace root: ${canonical}`, details: {} });
+					const content = typeof request.payload.content === "string" ? request.payload.content : "";
+					if (content.length > 1048576) return err(request, { code: "internal", message: "file too large (max 1MB)", details: {} });
+					await writeFile(canonical, content, "utf8");
+					return ok(request, { ok: true });
+				} catch (error) {
+					return err(request, { code: "internal", message: `write file failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
 			async importFiles(request) {
 				const { payload } = request;
 				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
@@ -5017,6 +5029,10 @@ const workspaceGitStashPushValueSchema = z$1.object({ ok: z$1.boolean() });
 const workspaceGitStashPopRequestSchema = z$1.object({ path: z$1.string() });
 /** workspace.gitStashPop response value. */
 const workspaceGitStashPopValueSchema = z$1.object({ ok: z$1.boolean() });
+/** workspace.writeFile request payload. */
+const workspaceWriteFileRequestSchema = z$1.object({ path: z$1.string(), content: z$1.string() });
+/** workspace.writeFile response value. */
+const workspaceWriteFileValueSchema = z$1.object({ ok: z$1.boolean() });
 /** 校验绝对路径是否落在任一工作区根目录内（Windows 大小写不敏感）。 */
 function isInsideWorkspaceRoots(ctx, canonical) {
 	return ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
@@ -5756,6 +5772,10 @@ const UNARY_ROUTES = {
 	"workspace.gitStashPop": {
 		schema: workspaceGitStashPopRequestSchema,
 		invoke: (api, r) => api.workspace.gitStashPop(r)
+	},
+	"workspace.writeFile": {
+		schema: workspaceWriteFileRequestSchema,
+		invoke: (api, r) => api.workspace.writeFile(r)
 	},
 	"workspace.importFiles": {
 		schema: workspaceImportFilesRequestSchema,
