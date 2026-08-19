@@ -3542,6 +3542,54 @@ function createApiProxy(ctx, defaults) {
 					return err(request, { code: "internal", message: `git push preview failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
 			},
+			async gitPrDraft(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const branch = await gitBranch(canonical);
+					const log = (await runGit(canonical, ["log", "-5", "--pretty=format:%s", "HEAD"], 15000)).trim();
+					const url = await gitPrUrl(canonical, branch);
+					const draft = await generatePrDraft(branch, log);
+					return ok(request, { title: draft.title, body: draft.body, url });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git pr draft failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitStashList(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const raw = (await runGit(canonical, ["stash", "list", "--format=%gd %gs"], 15000)).trim();
+					const stashes = raw ? raw.split(/\r?\n/).map((line) => {
+						const split = line.indexOf(" ");
+						return { index: line.slice(0, split), message: line.slice(split + 1).slice(0, 120) };
+					}) : [];
+					return ok(request, { stashes });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git stash list failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitStashPush(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+					await runGit(canonical, ["stash", "push", "--include-untracked", "-m", "dsh-stash-" + stamp], 30000);
+					return ok(request, { ok: true });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git stash push failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
+			async gitStashPop(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					await runGit(canonical, ["stash", "pop"], 30000);
+					return ok(request, { ok: true });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git stash pop failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
 			async importFiles(request) {
 				const { payload } = request;
 				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
@@ -4953,6 +5001,22 @@ const workspaceGitDiscardFileValueSchema = z$1.object({ ok: z$1.boolean() });
 const workspaceGitPushPreviewRequestSchema = z$1.object({ path: z$1.string() });
 /** workspace.gitPushPreview response value. */
 const workspaceGitPushPreviewValueSchema = z$1.object({ message: z$1.string(), files: z$1.array(z$1.object({ file: z$1.string(), status: z$1.string() })), ahead: z$1.number() });
+/** workspace.gitPrDraft request payload. */
+const workspaceGitPrDraftRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitPrDraft response value. */
+const workspaceGitPrDraftValueSchema = z$1.object({ title: z$1.string(), body: z$1.string(), url: z$1.string() });
+/** workspace.gitStashList request payload. */
+const workspaceGitStashListRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitStashList response value. */
+const workspaceGitStashListValueSchema = z$1.object({ stashes: z$1.array(z$1.object({ index: z$1.string(), message: z$1.string() })) });
+/** workspace.gitStashPush request payload. */
+const workspaceGitStashPushRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitStashPush response value. */
+const workspaceGitStashPushValueSchema = z$1.object({ ok: z$1.boolean() });
+/** workspace.gitStashPop request payload. */
+const workspaceGitStashPopRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitStashPop response value. */
+const workspaceGitStashPopValueSchema = z$1.object({ ok: z$1.boolean() });
 /** 校验绝对路径是否落在任一工作区根目录内（Windows 大小写不敏感）。 */
 function isInsideWorkspaceRoots(ctx, canonical) {
 	return ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
@@ -5026,28 +5090,78 @@ const gitFetchTimes = new Map();
 			return "";
 		}
 	}
+
+	/** 调用 GLM 对话接口（带一次重试，缓解限流抖动）。 */
+	async function callGlm(content, temperature) {
+		const key = await readGlmKey();
+		if (!key) throw new Error("no GLM key");
+		let lastError;
+		for (let attempt = 0; attempt < 2; attempt++) {
+			try {
+				const resp = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+					method: "POST",
+					headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+					body: JSON.stringify({ model: "glm-4-flash", messages: [{ role: "user", content }], temperature }),
+					signal: AbortSignal.timeout(30000)
+				});
+				if (!resp.ok) throw new Error("GLM HTTP " + resp.status);
+				const data = await resp.json();
+				const text = String(data.choices?.[0]?.message?.content ?? "").trim();
+				if (!text) throw new Error("empty GLM message");
+				return text;
+			} catch (error) {
+				lastError = error;
+				await new Promise((resolvePromise) => setTimeout(resolvePromise, 1500));
+			}
+		}
+		throw lastError;
+	}
 	/** 用 AI 根据暂存区改动生成中文 Conventional Commits 提交信息；失败回退为固定文案。 */
 	async function generateCommitMessage(dir, staged = true) {
 		try {
-			const key = await readGlmKey();
-			if (!key) throw new Error("no GLM key");
 			const stat = (await runGit(dir, staged ? ["diff", "--cached", "--stat"] : ["diff", "HEAD", "--stat"], 15000)).trim().slice(0, 2000);
 			const diff = (await runGit(dir, staged ? ["diff", "--cached"] : ["diff", "HEAD"], 15000)).trim().slice(0, 6000);
 			const branch = (await runGit(dir, ["rev-parse", "--abbrev-ref", "HEAD"], 15000)).trim();
 			const prompt = `根据下面的 git 改动生成一条中文提交信息：要求符合 Conventional Commits 规范（如 fix(模块): 描述、feat(模块): 描述），只输出一行，60 字以内，描述清楚这次代码修复/改动的内容。当前分支: ${branch}\n--- git diff --cached --stat ---\n${stat}\n--- git diff --cached（截断）---\n${diff}`;
-			const resp = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-				method: "POST",
-				headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-				body: JSON.stringify({ model: "glm-4-flash", messages: [{ role: "user", content: prompt }], temperature: 0.2 }),
-				signal: AbortSignal.timeout(30000)
-			});
-			if (!resp.ok) throw new Error("GLM HTTP " + resp.status);
-			const data = await resp.json();
-			const message = String(data.choices?.[0]?.message?.content ?? "").trim().split("\n")[0].replace(/^```[a-z]*|```$/g, "").trim().slice(0, 120);
+			const text = await callGlm(prompt, 0.2);
+			const message = text.split("\n")[0].replace(/^```[a-z]*|```$/g, "").trim().slice(0, 120);
 			if (!message) throw new Error("empty GLM message");
 			return message;
 		} catch (error) {
 			return "auto: update code (" + new Date().toISOString().slice(0, 10) + ")";
+		}
+	}
+
+	/** 从 origin 远程地址推导 PR 创建页 URL（支持 github/gitee/codeup，解析失败返回空串）。 */
+	async function gitPrUrl(dir, branch) {
+		try {
+			const remote = (await runGit(dir, ["config", "--get", "remote.origin.url"], 15000)).trim();
+			const match = remote.match(/(?:https:\/\/|git@)([^/:]+)[/:]([^/\s]+)\/([^/\s]+?)(?:\.git)?$/);
+			if (!match) return "";
+			const host = match[1].toLowerCase();
+			const owner = match[2];
+			const repo = match[3];
+			if (host === "github.com") return `https://github.com/${owner}/${repo}/pull/new/${branch}`;
+			if (host.includes("gitee.com")) return `https://gitee.com/${owner}/${repo}/pull/new/${branch}`;
+			if (host.includes("codeup.aliyun.com")) return `https://codeup.aliyun.com/${owner}/${repo}/changes/new`;
+			return "";
+		} catch {
+			return "";
+		}
+	}
+	/** 用 AI 根据最近提交生成 PR 标题与描述（中文 Markdown）；失败回退为最近一条提交信息。 */
+	async function generatePrDraft(branch, log) {
+		try {
+			const prompt = `根据下面的 git 分支与最近提交生成一个 Pull Request：输出 JSON，格式 {"title": "...", "body": "..."}。title 一行中文、60 字以内；body 用中文 Markdown，包含「改动内容」「测试」「影响范围」三个小节，每节 1-3 行。当前分支: ${branch}\n最近提交:\n${log}`;
+			const raw = await callGlm(prompt, 0.3);
+			const jsonStart = raw.indexOf("{");
+			const jsonEnd = raw.lastIndexOf("}");
+			if (jsonStart < 0 || jsonEnd < 0) throw new Error("no JSON in GLM output");
+			const parsed = JSON.parse(raw.slice(jsonStart, jsonEnd + 1));
+			return { title: String(parsed.title ?? "").slice(0, 80), body: String(parsed.body ?? "").slice(0, 2000) };
+		} catch (error) {
+			const firstLine = log.split(/\r?\n/)[0]?.trim() || branch;
+			return { title: "PR: " + firstLine.slice(0, 60), body: "## 改动内容\n" + log.split(/\r?\n/).map((line) => "- " + line).join("\n") };
 		}
 	}
 
@@ -5626,6 +5740,22 @@ const UNARY_ROUTES = {
 	"workspace.gitPushPreview": {
 		schema: workspaceGitPushPreviewRequestSchema,
 		invoke: (api, r) => api.workspace.gitPushPreview(r)
+	},
+	"workspace.gitPrDraft": {
+		schema: workspaceGitPrDraftRequestSchema,
+		invoke: (api, r) => api.workspace.gitPrDraft(r)
+	},
+	"workspace.gitStashList": {
+		schema: workspaceGitStashListRequestSchema,
+		invoke: (api, r) => api.workspace.gitStashList(r)
+	},
+	"workspace.gitStashPush": {
+		schema: workspaceGitStashPushRequestSchema,
+		invoke: (api, r) => api.workspace.gitStashPush(r)
+	},
+	"workspace.gitStashPop": {
+		schema: workspaceGitStashPopRequestSchema,
+		invoke: (api, r) => api.workspace.gitStashPop(r)
 	},
 	"workspace.importFiles": {
 		schema: workspaceImportFilesRequestSchema,

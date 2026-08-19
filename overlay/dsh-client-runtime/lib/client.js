@@ -9793,6 +9793,31 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				if (!response.result.ok) throw new Error(response.result.error.message);
 				return response.result.value;
 			}
+
+			/** AI 生成 PR 标题与描述（含创建页 URL）。 */
+			async gitPrDraft(path) {
+				const response = await this.api.workspace.gitPrDraft({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 暂存区列表。 */
+			async gitStashList(path) {
+				const response = await this.api.workspace.gitStashList({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 暂存当前全部改动（含未跟踪文件）。 */
+			async gitStashPush(path) {
+				const response = await this.api.workspace.gitStashPush({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
+			/** 恢复最近一个暂存。 */
+			async gitStashPop(path) {
+				const response = await this.api.workspace.gitStashPop({ path });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
 			/** Upload file bytes into the workspace's .dsh-uploads directory and mount them as public files. */
 			async importFiles(workspaceId, files) {
 				const { result } = await this.api.workspace.importFiles({
@@ -10330,6 +10355,19 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			}
 			async gitPushPreview(path) {
 				return await this.manager.gitPushPreview(path);
+			}
+
+			async gitPrDraft(path) {
+				return await this.manager.gitPrDraft(path);
+			}
+			async gitStashList(path) {
+				return await this.manager.gitStashList(path);
+			}
+			async gitStashPush(path) {
+				return await this.manager.gitStashPush(path);
+			}
+			async gitStashPop(path) {
+				return await this.manager.gitStashPop(path);
 			}
 			/**
 			* Create one child directory through the Host's `browse` capability.
