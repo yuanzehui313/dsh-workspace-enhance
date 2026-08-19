@@ -24,14 +24,14 @@ one-command install / rollback / verify scripts.
 5. **In-app directory picker**: Windows uses the built-in browse picker with a
    drive list instead of the native dialog.
 6. **Folder rows expand** to show inner files/directories recursively.
-7. **Session merge**: merge selected sessions into one with the full subtree;
-   archive = archive all fork children and keep the source.
+7. **Session merge removed**: new sessions already carry whole-workspace context,
+   so the merge feature was dropped; its buttons and entry points are gone
+   (only unused i18n strings remain).
 8. **Session row icons**: fork / archive / delete icons with fork-tree
    rendering; rename moved out of the ⋯ menu (menu removed).
-9. **Workspace row icons**: merge / rename / new session / delete as direct
-   buttons; the merge action uses a distinct link icon. (The “manage folders”
-   icon was removed — its entry point is now the + button on the folder/file
-   area headers.)
+9. **Workspace row icons**: rename / new session / delete as direct buttons.
+   (The “manage folders” icon was removed — its entry point is now the +
+   button on the folder/file area headers.)
 10. **Recycle-bin styling**: a workspace-level group row (trash icon, bold
     brand-blue title, expanded by default, click to collapse, items aligned
     with the title).
@@ -73,6 +73,28 @@ one-command install / rollback / verify scripts.
     open the preview panel; `host.readFile` returns base64 for binary files and
     the panel renders png/jpg/jpeg/gif/webp/svg images inline; Markdown and
     30+ code languages as before.
+19. **Folder git panel**: git-repo folder rows show the current branch chip and
+    a tri-color status dot (🟡 amber = uncommitted changes / 🔵 blue = behind
+    remote / 🟢 green = in sync). The chip opens a git menu — switch branch,
+    create branch, pull updates (`git pull --ff-only`), push code (stage all →
+    an AI-written Chinese commit message → commit → push, result echoed in the
+    menu). Every action applies to that folder's on-disk working tree.
+
+## Folder git panel (after the rework)
+
+![Workspace sidebar git panel](docs/workspace-git-panel.png)
+
+In the folder area, git-repo folder rows show the current branch chip plus a status dot:
+
+- 🟡 **amber** = uncommitted changes
+- 🔵 **blue** = behind the remote (updates available)
+- 🟢 **green** = in sync with the remote
+
+Click the branch chip to open the git menu: **switch branch** (click a row),
+**create branch** (input + Enter), **pull updates** (`git pull --ff-only`),
+**push code** (`git add -A` → an AI-written Chinese Conventional Commits message
+→ commit → push; the result is echoed in the menu). Branch info and the folder
+tree refresh automatically after every operation.
 
 ## Installation
 
