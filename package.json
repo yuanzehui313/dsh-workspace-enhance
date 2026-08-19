@@ -31,6 +31,7 @@
     "lib/client.js",
     "overlay/**/*",
     "scripts/*.ps1",
+    "handover/**/*",
     "README.md",
     "README.en.md",
     "LICENSE"

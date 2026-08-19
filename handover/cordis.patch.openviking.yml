@@ -1,0 +1,11 @@
+# OpenViking context database MCP bridge — 把下面这一项追加到 ~/.dsh/cordis.patch.yml 的补丁列表末尾。
+# 前置：OpenViking 服务已在本机运行（pip install openviking；openviking init 完成 provider 配置；
+# openviking-server 启动服务，默认监听 http://127.0.0.1:1933/mcp）。
+# 追加后完整重启 DSH，新会话工具清单（run_code 的 tools）里应出现 16 个 mcp__openviking__* 工具。
+- insert:
+    - id: mcp-openviking
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: openviking
+        transport: streamable-http
+        url: http://127.0.0.1:1933/mcp
