@@ -6,8 +6,10 @@ DeepSeek Harness（DSH）工作区与会话管理增强插件。以**标准 DSH 
 **overlay 补丁集**方式覆盖官方 `@deepseek-ai/dsh-*` 的 17 个 bundle（这些改动点位于
 apiproxy RPC 表、工作区注册表、工作区浏览器 UI 等不可叠加扩展的内部实现中），配套一键
 安装 / 回滚 / 校验脚本。
-布局的截图
-<img width="448" height="1289" alt="image" src="https://github.com/user-attachments/assets/fb0b2f5c-af6a-40db-a6cd-beea2fc87a36" />
+
+![Uploading image.png…]()
+
+
 
 
 ## 功能清单
