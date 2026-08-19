@@ -51,6 +51,9 @@ apiproxy RPC 表、工作区注册表、工作区浏览器 UI 等不可叠加扩
     同前。
 19. **细节收敛**：文件夹区只列附加目录（不含工作区主目录，空时显示 + 提示）；文件区底部
     常驻虚线拖放区；对话框的拖拽监听与高亮遮罩收窄到输入框内部（不再全屏拦截）。
+20. **跨会话记忆模板**：`handover/` 目录内置 OpenViking MCP 桥接配置片段与全局/工作区
+    AGENTS.md、HANDOFF.md 模板，配套「语义记忆 + 文件交接」的会话内容不隔离方案
+    （详见下文「跨会话记忆（OpenViking + 文件交接）」）。
 
 ## 安装
 
@@ -80,24 +83,20 @@ powershell -ExecutionPolicy Bypass -File "...\scripts\uninstall.ps1" # 从最近
 - Web 界面的插件解析以 **profile 的 `node_modules\@deepseek-ai`** 为准（补丁落在这里）。
 - 升级 DSH 版本后需重新核对 overlay（`verify.ps1` 会报告 REVERTED）。
 
-## DSH Desktop（桌面版）适配
+## 跨会话记忆（OpenViking + 文件交接）
 
-配合 [`anywhere-labs/deepseek-harness-desktop`](https://github.com/anywhere-labs/deepseek-harness-desktop)（v2.0.0，Windows）：
+插件自带 `handover/` 模板目录，把 DSH 默认「会话隔离」改成「内容不隔离」的混合交接：
 
-```powershell
-# 1. 安装桌面版后，把 overlay 应用到其内置 dsh：
-powershell -ExecutionPolicy Bypass -File "...\scripts\install.ps1" `
-  -ProfileRoot "C:\Users\Administrator\AppData\Local\Programs\DSH Desktop\resources\app.asar.unpacked"
+- **语义记忆（OpenViking）**：把 `handover/cordis.patch.openviking.yml` 的补丁项追加进
+  `~/.dsh/cordis.patch.yml` 并重启 DSH，新会话即获得 16 个 `mcp__openviking__*` 工具
+  （find / search / recall / remember / read / write / …）。会话开工先 recall/find 检索，
+  收工把结论与决策 remember 写入。
+- **精确交接（文件）**：`handover/` 提供全局 `AGENTS.md`、工作区 `AGENTS.md` 与
+  `HANDOFF.md` 三份模板（见 `handover/README.md` 的安装位置表）。工作区 AGENTS.md 在
+  新会话开局自动注入，HANDOFF.md 在每个里程碑结束更新。
 
-# 2. 关键：桌面版 v2.0.0 内置的 koffi 3.1.4 原生预编译在 Windows 上段错误
-#    （创建会话后主进程访问违例崩溃，上游 issue #145 已确认），必须升级到 3.1.5：
-#    把任意一个含 3.1.5 预编译的 koffi 复制过去（koffi 与 @koromix/koffi-win32-x64 两个目录）
-
-# 3. 启动桌面版即可：回收站、跨工作区拖动、文件预览等全部生效
-```
-
-注意：桌面版自动更新会覆盖内置 dsh 与 koffi，更新后需重跑上述两步（可用
-`scripts\guard.ps1` 加计划任务自动巡检修复 overlay；koffi 升级需手工确认）。
+OpenViking 服务前置：`pip install openviking` → `openviking init` → `openviking-server`
+（默认 `http://127.0.0.1:1933/mcp`）。
 
 ## 目录结构
 
@@ -108,6 +107,7 @@ dsh-workspace-enhance/
 │   ├── index.js        # 宿主侧 Cordis 服务（插件清单可见性 + 能力标记）
 │   └── client.js       # 客户端插件（标准 __ModuleLoader__ 形式）
 ├── overlay/            # 覆盖补丁集（与 @deepseek-ai 相对路径一致，17 个 bundle）
+├── handover/           # 跨会话记忆模板（OpenViking 桥接 + AGENTS.md/HANDOFF.md）
 ├── scripts/            # install / uninstall / verify
 └── README.md（中文，GitHub 默认展示）/ README.en.md（英文）
 ```
