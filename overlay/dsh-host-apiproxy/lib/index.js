@@ -3401,11 +3401,11 @@ function createApiProxy(ctx, defaults) {
 					const canonical = resolve(request.payload.path);
 					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
 					const repo = await isGitRepo(canonical);
-					if (!repo) return ok(request, { repo: false, branch: null, branches: [], dirty: false });
+					if (!repo) return ok(request, { repo: false, branch: null, branches: [], dirty: false, behind: false });
 					const branch = await gitBranch(canonical);
 					const branches = (await runGit(canonical, ["branch", "--format=%(refname:short)"])).split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
 					const dirty = (await runGit(canonical, ["status", "--porcelain"])).trim().length > 0;
-					return ok(request, { repo: true, branch, branches, dirty });
+					return ok(request, { repo: true, branch, branches, dirty, behind: await gitBehind(canonical) });
 				} catch (error) {
 					return err(request, { code: "internal", message: `git info failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
@@ -4812,7 +4812,7 @@ const workspaceInsertSessionBeforeValueSchema = z$1.object({ workspace: workspac
 /** workspace.gitInfo request payload: absolute folder path. */
 const workspaceGitInfoRequestSchema = z$1.object({ path: z$1.string() });
 /** workspace.gitInfo response value. */
-const workspaceGitInfoValueSchema = z$1.object({ repo: z$1.boolean(), branch: z$1.string().nullable(), branches: z$1.array(z$1.string()), dirty: z$1.boolean() });
+const workspaceGitInfoValueSchema = z$1.object({ repo: z$1.boolean(), branch: z$1.string().nullable(), branches: z$1.array(z$1.string()), dirty: z$1.boolean(), behind: z$1.boolean() });
 /** workspace.gitSwitchBranch request payload. */
 const workspaceGitSwitchBranchRequestSchema = z$1.object({ path: z$1.string(), branch: z$1.string() });
 /** workspace.gitSwitchBranch response value. */
@@ -4835,9 +4835,9 @@ function isInsideWorkspaceRoots(ctx, canonical) {
 	}));
 }
 /** 运行 git 命令（30s 超时；失败时把 stderr 首行作为错误信息）。 */
-function runGit(dir, args) {
+function runGit(dir, args, timeoutMs = 30000) {
 	return new Promise((resolvePromise, rejectPromise) => {
-		execFile("git", ["-C", dir, ...args], { encoding: "utf8", timeout: 30000, windowsHide: true }, (error, stdout, stderr) => {
+		execFile("git", ["-C", dir, ...args], { encoding: "utf8", timeout: timeoutMs, windowsHide: true }, (error, stdout, stderr) => {
 			if (error) {
 				const detail = ((stderr || "") + " " + (error.message || "")).trim().split(/\r?\n/)[0].slice(0, 500);
 				rejectPromise(new Error(detail || "git failed"));
@@ -4858,6 +4858,21 @@ async function isGitRepo(dir) {
 async function gitBranch(dir) {
 	return (await runGit(dir, ["rev-parse", "--abbrev-ref", "HEAD"])).trim();
 }
+
+	/** 本地是否落后于上游（先静默 fetch 刷新远端引用，失败则用缓存引用；无上游视为未落后）。 */
+	async function gitBehind(dir) {
+		try {
+			const upstream = (await runGit(dir, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"], 15000)).trim();
+			if (!upstream) return false;
+			try {
+				await runGit(dir, ["fetch", "--quiet"], 15000);
+			} catch {}
+			const counts = (await runGit(dir, ["rev-list", "--left-right", "--count", "HEAD..." + upstream], 15000)).trim().split(/\s+/).filter(Boolean);
+			return Number(counts[1] ?? 0) > 0;
+		} catch {
+			return false;
+		}
+	}
 
 /** workspace.setAdditionalPaths request payload: the workspace plus its complete additional root list. */
 const workspaceAddFilesRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, entries: z$1.array(z$1.object({ path: z$1.string().optional(), sessionId: z$1.string().optional(), name: z$1.string(), size: z$1.number().int().nonnegative() })) }); const workspaceAddFilesValueSchema = z$1.object({ workspace: workspaceViewSchema }); const workspaceRemoveFileRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, fileId: z$1.string() }); const workspaceRemoveFileValueSchema = z$1.object({ workspace: workspaceViewSchema }); const workspaceImportFilesRequestSchema = z$1.object({ workspaceId: workspaceIdSchema, files: z$1.array(z$1.object({ name: z$1.string(), data: z$1.string(), sessionId: z$1.string().optional() })) }); const workspaceImportFilesValueSchema = z$1.object({ workspace: workspaceViewSchema, imported: z$1.array(z$1.object({ path: z$1.string(), name: z$1.string(), size: z$1.number().int().nonnegative() })) });

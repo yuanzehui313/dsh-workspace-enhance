@@ -32,7 +32,7 @@ window.__ModuleLoader__.load({
 		* @returns resolved widths; details 0 means visually closed (never unmounted), while a closed sidebar keeps its compact rail.
 		*/
 		function computeColumns(viewport, sidebar, details) {
-			const s = sidebar === 0 ? 56 : clampWidth(sidebar, 264, 420);
+			const s = sidebar === 0 ? 56 : clampWidth(sidebar, 264, 450);
 			const d0 = details === 0 ? 0 : clampWidth(details, 300, 520);
 			if (s + d0 + 640 <= viewport) return {
 				sidebar: s,
@@ -300,7 +300,7 @@ window.__ModuleLoader__.load({
 					const persisted = readPersistedPanels();
 					const remembered = persisted === null || typeof persisted.sidebar !== "number" ? 420 : persisted.sidebar;
 					return {
-						sidebar: clampWidth(remembered, 264, 420),
+						sidebar: clampWidth(remembered, 264, 450),
 						details: 0,
 						narrow: false,
 						narrowExpanded: false
@@ -308,7 +308,7 @@ window.__ModuleLoader__.load({
 				},
 				actions: {
 					setSidebar: (d, px) => {
-						d.sidebar = clampWidth(px, 264, 420);
+						d.sidebar = clampWidth(px, 264, 450);
 						writePersistedPanels(d);
 					},
 					setDetails: (d, px) => {
@@ -318,7 +318,7 @@ window.__ModuleLoader__.load({
 						if (d.narrow) d.narrowExpanded = !d.narrowExpanded;
 						else if (d.sidebar === 0) {
 							const persisted = readPersistedPanels();
-							d.sidebar = clampWidth(persisted === null || typeof persisted.sidebar !== "number" ? 420 : persisted.sidebar, 264, 420);
+							d.sidebar = clampWidth(persisted === null || typeof persisted.sidebar !== "number" ? 420 : persisted.sidebar, 264, 450);
 							writePersistedPanels(d);
 						} else {
 							d.sidebar = 0;

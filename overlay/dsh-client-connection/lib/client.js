@@ -5589,7 +5589,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		/** workspace.setAdditionalPaths response value. */
 		const workspaceSetAdditionalPathsValueSchema = object({ workspace: workspaceViewSchema }); /** workspace.addFiles response value. */ const workspaceAddFilesValueSchema = object({ workspace: workspaceViewSchema }); /** workspace.removeFile response value. */ const workspaceRemoveFileValueSchema = object({ workspace: workspaceViewSchema });
 		/** workspace.importFiles response value. */ const workspaceImportFilesValueSchema = object({ workspace: workspaceViewSchema, imported: array(object({ path: string(), name: string(), size: number().int().nonnegative() })) });
-/** workspace.gitInfo response value. */ const workspaceGitInfoValueSchema = object({ repo: boolean(), branch: string().nullable(), branches: array(string()), dirty: boolean() });
+/** workspace.gitInfo response value. */ const workspaceGitInfoValueSchema = object({ repo: boolean(), branch: string().nullable(), branches: array(string()), dirty: boolean(), behind: boolean() });
 /** workspace.gitSwitchBranch response value. */ const workspaceGitSwitchBranchValueSchema = object({ branch: string() });
 /** workspace.gitCreateBranch response value. */ const workspaceGitCreateBranchValueSchema = object({ branch: string() });
 /** workspace.gitPull response value. */ const workspaceGitPullValueSchema = object({ branch: string(), output: string() });
@@ -9549,7 +9549,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							return ok(request, { workspace: { ...workspace }, imported });
 						},
 						gitInfo: (request) => {
-							return ok(request, { repo: false, branch: null, branches: [], dirty: false });
+							return ok(request, { repo: false, branch: null, branches: [], dirty: false, behind: false });
 						},
 						gitSwitchBranch: (request) => {
 							return err(request, { code: "internal", message: "git operations are unavailable in replay mode", details: {} });
