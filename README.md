@@ -8,6 +8,7 @@ apiproxy RPC 表、工作区注册表、工作区浏览器 UI 等不可叠加扩
 安装 / 回滚 / 校验脚本。
 ![Uploading image.png…]()
 
+
 ## 功能清单
 
 1. **回收站**（软删除 / 恢复 / 彻底删除，会话 + 工作区）：`session.delete` 变为移入回收站，
