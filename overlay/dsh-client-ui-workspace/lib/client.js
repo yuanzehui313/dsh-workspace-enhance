@@ -1616,7 +1616,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		/** The scrolling session tree; unmounting drops the sessions subscription and expand-all state. */
-		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, onOpenFile, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onWorkspaceFileRemove, onAddItemsRequest, onWorkspaceFilesDrop, onRootReselect, onRootRemove, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
+		function SessionTree({ useSessions, startSession, startUngroupedSession, open, onMoveSession, onOpenFile, forkSession, workspaces, archivedSessionIds, onRenameRequest, onDeleteRequest, onFoldersRequest, onWorkspaceFileRemove, onAddItemsRequest, onWorkspaceFilesDrop, onRootReselect, onRootRemove, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, gitPush, mergeMode, mergeSelected, onToggleMergeSession, onMergeRequest, mergeBarGroup, mergeBusy, mergeError, onConfirmMerge, onCancelMerge, onSessionRename, onSessionArchive, onSessionDeleteRequest, trashSessions, trashWorkspaces, onTrashRestoreSession, onTrashPurgeSession, onTrashRestoreWorkspace, onTrashPurgeWorkspace, insertWorkspaceBefore, insertSessionBefore, orderBy, groupExpansion, setGroupExpanded, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t }) {
 			const list = useSessions((s) => s);
 			const current = list.current;
 			const [expandedSessionGroups, setExpandedSessionGroups] = (0, react.useState)([]);
@@ -2072,9 +2072,9 @@ window.__ModuleLoader__.load({
 																	})
 																]
 															}),
-															(0, react_jsx_runtime.jsx)("div", {
+															(0, react_jsx_runtime.jsxs)("div", {
 																className: WorkspaceBrowser_module_css_default.gitMenuFoot,
-																children: (0, react_jsx_runtime.jsx)("button", {
+																children: [(0, react_jsx_runtime.jsx)("button", {
 																	type: "button",
 																	className: WorkspaceBrowser_module_css_default.gitBtn,
 																	disabled: gitBusyPath !== null,
@@ -2082,8 +2082,17 @@ window.__ModuleLoader__.load({
 																		runGitOp(root.path, () => gitPull(root.path));
 																	},
 																	children: gitBusyPath === root.path ? t("git.working") : t("git.pull")
-																})
-															})
+																}),
+																	(0, react_jsx_runtime.jsx)("button", {
+																		type: "button",
+																		className: WorkspaceBrowser_module_css_default.gitBtn,
+																		disabled: gitBusyPath !== null,
+																		onClick: () => {
+																			runGitOp(root.path, () => gitPush(root.path));
+																		},
+																		children: t("git.push")
+																	})
+															]})
 														]
 													}),
 													root.removable === true && (0, react_jsx_runtime.jsx)("button", {
@@ -2848,7 +2857,7 @@ window.__ModuleLoader__.load({
 		* @param props - composed slot props (shell owner share + store + injected actions).
 		* @returns the region element tree.
 		*/
-		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, readFile, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, addWorkspaceFiles, removeWorkspaceFile, importWorkspaceFiles, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
+		function WorkspaceBrowser({ wide, expandSidebar, useSessions, useWorkspaces, useStore, actions, startSession, startUngroupedSession, open, moveSession, readFile, renameSession, forkSession, renameWorkspace, deleteWorkspace, insertWorkspaceBefore, archiveSession, insertSessionBefore, createWorkspace, setAdditionalPaths, addWorkspaceFiles, removeWorkspaceFile, importWorkspaceFiles, listDirectory, gitInfo, gitSwitchBranch, gitCreateBranch, gitPull, gitPush, mergeSessions, deleteSession, unarchiveSession, fetchTrash, restoreSession, purgeSession, restoreWorkspace, purgeWorkspace, searchSessions, searchResultLimit, useDirectoryFlow, renderSlot, t }) {
 			const sessionList = useSessions((state) => state);
 			const workspaces = useWorkspaces((state) => state.items);
 			const workspacePhase = useWorkspaces((state) => state.phase);
@@ -3393,6 +3402,7 @@ window.__ModuleLoader__.load({
 							gitSwitchBranch,
 							gitCreateBranch,
 							gitPull,
+							gitPush,
 							mergeMode,
 							mergeSelected,
 							onToggleMergeSession: (id) => {
@@ -3911,6 +3921,7 @@ window.__ModuleLoader__.load({
 			"git.newBranch": "新建分支",
 			"git.newPlaceholder": "新分支名",
 			"git.pull": "更新代码",
+			"git.push": "推送代码",
 			"git.working": "Git 操作中…",
 			"git.dirty": "有未提交的修改",
 			"git.behind": "有未更新",
@@ -4015,6 +4026,7 @@ window.__ModuleLoader__.load({
 			"git.newBranch": "New branch",
 			"git.newPlaceholder": "branch name",
 			"git.pull": "Pull updates",
+			"git.push": "Push changes",
 			"git.working": "Git working…",
 			"git.dirty": "Uncommitted changes",
 			"git.behind": "Updates available",
@@ -4111,6 +4123,7 @@ window.__ModuleLoader__.load({
 				gitSwitchBranch: (path, branch) => ctx.workspaces.gitSwitchBranch(path, branch),
 				gitCreateBranch: (path, name) => ctx.workspaces.gitCreateBranch(path, name),
 				gitPull: (path) => ctx.workspaces.gitPull(path),
+				gitPush: (path) => ctx.workspaces.gitPush(path),
 				mergeSessions: async (workspaceId, sessionIds) => {
 					return await ctx.sessions.merge({
 						workspaceId,

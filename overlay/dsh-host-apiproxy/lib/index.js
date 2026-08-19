@@ -3442,6 +3442,16 @@ function createApiProxy(ctx, defaults) {
 					return err(request, { code: "internal", message: `git pull failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
 			},
+			async gitPush(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const output = (await runGit(canonical, ["push"])).trim().slice(0, 1000);
+					return ok(request, { branch: await gitBranch(canonical), output });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git push failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
 			async importFiles(request) {
 				const { payload } = request;
 				const workspace = ctx.workspaceRegistry.get(WorkspaceId(payload.workspaceId));
@@ -4825,6 +4835,10 @@ const workspaceGitCreateBranchValueSchema = z$1.object({ branch: z$1.string() })
 const workspaceGitPullRequestSchema = z$1.object({ path: z$1.string() });
 /** workspace.gitPull response value. */
 const workspaceGitPullValueSchema = z$1.object({ branch: z$1.string(), output: z$1.string() });
+/** workspace.gitPush request payload. */
+const workspaceGitPushRequestSchema = z$1.object({ path: z$1.string() });
+/** workspace.gitPush response value. */
+const workspaceGitPushValueSchema = z$1.object({ branch: z$1.string(), output: z$1.string() });
 /** 校验绝对路径是否落在任一工作区根目录内（Windows 大小写不敏感）。 */
 function isInsideWorkspaceRoots(ctx, canonical) {
 	return ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
@@ -5408,6 +5422,10 @@ const UNARY_ROUTES = {
 	"workspace.gitPull": {
 		schema: workspaceGitPullRequestSchema,
 		invoke: (api, r) => api.workspace.gitPull(r)
+	},
+	"workspace.gitPush": {
+		schema: workspaceGitPushRequestSchema,
+		invoke: (api, r) => api.workspace.gitPush(r)
 	},
 	"workspace.importFiles": {
 		schema: workspaceImportFilesRequestSchema,
