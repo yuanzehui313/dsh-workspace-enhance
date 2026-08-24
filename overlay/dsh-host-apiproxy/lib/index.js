@@ -1762,6 +1762,8 @@ function createApiProxy(ctx, defaults) {
 	const presetSwitches = /* @__PURE__ */ new Map();
 	/** Client-chosen identity creation/resume, deduplicated across concurrent retries. */
 	const sessionCreations = /* @__PURE__ */ new Map();
+	/** Live AgentHandle per apiproxy-created/resumed session id — session.purge disposes the live agent through it so the session cannot resurrect in session.list after its recycle-bin markers are cleared. */
+	const sessionHandles = /* @__PURE__ */ new Map();
 	/** Serializes path ownership and explicit title checks with Workspace mutations. */
 	let workspaceCreationChain = Promise.resolve();
 	const pendingQuestions = /* @__PURE__ */ new Map();
@@ -2186,11 +2188,13 @@ function createApiProxy(ctx, defaults) {
 						events: inspected.events
 					});
 					assertPresetUnchanged(sessionId, presetId, storedPreset);
-					return (await ctx.agents.resume({
+					const resumed = await ctx.agents.resume({
 						resumeSessionId: sessionId,
 						agentOptions: agentOptions(),
 						setup: (await composeAgent(storedPreset)).setup
-					})).agent;
+					});
+					sessionHandles.set(sessionId, resumed);
+					return resumed.agent;
 				}
 				try {
 					await mkdir(cwd, { recursive: true });
@@ -2198,7 +2202,7 @@ function createApiProxy(ctx, defaults) {
 					throw new Error(`failed to ensure project directory "${cwd}": ${String(error)}`, { cause: error });
 				}
 				const composition = await composeAgent(presetId);
-				return (await ctx.agents.create({
+				const created = await ctx.agents.create({
 					sessionId,
 					agentOptions: agentOptions(),
 					meta: {
@@ -2206,7 +2210,9 @@ function createApiProxy(ctx, defaults) {
 						...composition.agentPreset === void 0 ? {} : { agentPreset: composition.agentPreset }
 					},
 					setup: composition.setup
-				})).agent;
+				});
+				sessionHandles.set(sessionId, created);
+				return created.agent;
 			})().catch((error) => {
 				const live = ctx.agents.get(sessionId);
 				if (live !== void 0) {
@@ -2830,6 +2836,25 @@ function createApiProxy(ctx, defaults) {
 			},
 			async purge(request) {
 				const { sessionId } = request.payload;
+				/* Tear the live agent down FIRST (orderly cancel + final flush +
+				* session-store removal) so a purged session cannot resurrect in
+				* session.list once its recycle-bin markers are cleared. */
+				const handle = sessionHandles.get(sessionId);
+				if (handle !== void 0) {
+					sessionHandles.delete(sessionId);
+					try {
+						await handle.dispose();
+					} catch (error) {
+						ctx.logger.warn(`session.purge: live agent "${sessionId}" teardown rejected: ${String(error)}`);
+					}
+				} else {
+					const live = ctx.agents.get(sessionId);
+					if (live !== void 0) try {
+						live.cancel({ kind: "user" }, { keepInbox: true });
+					} catch {
+						/* a settled agent rejects cancel; purge proceeds */
+					}
+				}
 				const workspace = ctx.workspaceRegistry.findBySessionId(sessionId);
 				if (workspace !== void 0) try {
 					await workspace.detachSession(sessionId);
@@ -3012,7 +3037,7 @@ function createApiProxy(ctx, defaults) {
 				const childId = `session-${randomUUID()}`;
 				const forkComposition = await composeAgent(resolveSessionPreset(source));
 				try {
-					await ctx.agents.create({
+					sessionHandles.set(childId, await ctx.agents.create({
 						sessionId: childId,
 						seed: events.slice(0, cut),
 						meta: {
@@ -3023,7 +3048,7 @@ function createApiProxy(ctx, defaults) {
 						},
 						agentOptions: agentOptions(),
 						setup: forkComposition.setup
-					});
+					}));
 				} catch (error) {
 					return err(request, {
 						code: "internal",
@@ -5117,34 +5142,40 @@ const gitFetchTimes = new Map();
 		return sync.behind > 0;
 	}
 
-	/** 读取智谱 GLM API Key（宿主 ~/.mcp.json 的 glm4v-vision 服务，无则空串）。 */
-	async function readGlmKey() {
+	/** 读取 DeepSeek API Key（优先宿主 ~/.mcp.json 的 glm4v-vision 服务 env.DEEPSEEK_API_KEY，回退 ~/.dsh/.credentials.yaml）。 */
+	async function readDeepSeekKey() {
 		try {
 			const raw = await readFile(join(homedir(), ".mcp.json"), "utf8");
 			const cfg = JSON.parse(raw);
-			return cfg.mcpServers?.["glm4v-vision"]?.env?.ZHIPU_API_KEY ?? "";
-		} catch {
-			return "";
-		}
+			const key = cfg.mcpServers?.["glm4v-vision"]?.env?.DEEPSEEK_API_KEY;
+			if (typeof key === "string" && key.length > 0) return key;
+		} catch {}
+		try {
+			const credRaw = await readFile(join(homedir(), ".dsh", ".credentials.yaml"), "utf8");
+			const match = credRaw.match(/^DEEPSEEK_API_KEY:\s*(\S+)\s*$/m);
+			if (match) return match[1];
+		} catch {}
+		return "";
 	}
 
-	/** 调用 GLM 对话接口（带一次重试，缓解限流抖动）。 */
-	async function callGlm(content, temperature) {
-		const key = await readGlmKey();
-		if (!key) throw new Error("no GLM key");
+	/** 调用 DeepSeek 对话接口（带一次重试，缓解限流抖动）。 */
+	async function callDeepSeek(content, temperature) {
+		const key = await readDeepSeekKey();
+		if (!key) throw new Error("no DeepSeek key");
+		const model = process.env.DEEPSEEK_COMMIT_MODEL ?? "deepseek-v4-flash";
 		let lastError;
 		for (let attempt = 0; attempt < 2; attempt++) {
 			try {
-				const resp = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+				const resp = await fetch("https://api.deepseek.com/chat/completions", {
 					method: "POST",
 					headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-					body: JSON.stringify({ model: "glm-4-flash", messages: [{ role: "user", content }], temperature }),
-					signal: AbortSignal.timeout(30000)
+					body: JSON.stringify({ model, max_tokens: 1024, messages: [{ role: "user", content }], temperature }),
+					signal: AbortSignal.timeout(60000)
 				});
-				if (!resp.ok) throw new Error("GLM HTTP " + resp.status);
+				if (!resp.ok) throw new Error("DeepSeek HTTP " + resp.status);
 				const data = await resp.json();
 				const text = String(data.choices?.[0]?.message?.content ?? "").trim();
-				if (!text) throw new Error("empty GLM message");
+				if (!text) throw new Error("empty DeepSeek message");
 				return text;
 			} catch (error) {
 				lastError = error;
@@ -5160,9 +5191,9 @@ const gitFetchTimes = new Map();
 			const diff = (await runGit(dir, staged ? ["diff", "--cached"] : ["diff", "HEAD"], 15000)).trim().slice(0, 6000);
 			const branch = (await runGit(dir, ["rev-parse", "--abbrev-ref", "HEAD"], 15000)).trim();
 			const prompt = `根据下面的 git 改动生成一条中文提交信息：要求符合 Conventional Commits 规范（如 fix(模块): 描述、feat(模块): 描述），只输出一行，60 字以内，描述清楚这次代码修复/改动的内容。当前分支: ${branch}\n--- git diff --cached --stat ---\n${stat}\n--- git diff --cached（截断）---\n${diff}`;
-			const text = await callGlm(prompt, 0.2);
+			const text = await callDeepSeek(prompt, 0.2);
 			const message = text.split("\n")[0].replace(/^```[a-z]*|```$/g, "").trim().slice(0, 120);
-			if (!message) throw new Error("empty GLM message");
+			if (!message) throw new Error("empty DeepSeek message");
 			return message;
 		} catch (error) {
 			return "auto: update code (" + new Date().toISOString().slice(0, 10) + ")";
@@ -5190,10 +5221,10 @@ const gitFetchTimes = new Map();
 	async function generatePrDraft(branch, log) {
 		try {
 			const prompt = `根据下面的 git 分支与最近提交生成一个 Pull Request：输出 JSON，格式 {"title": "...", "body": "..."}。title 一行中文、60 字以内；body 用中文 Markdown，包含「改动内容」「测试」「影响范围」三个小节，每节 1-3 行。当前分支: ${branch}\n最近提交:\n${log}`;
-			const raw = await callGlm(prompt, 0.3);
+			const raw = await callDeepSeek(prompt, 0.3);
 			const jsonStart = raw.indexOf("{");
 			const jsonEnd = raw.lastIndexOf("}");
-			if (jsonStart < 0 || jsonEnd < 0) throw new Error("no JSON in GLM output");
+			if (jsonStart < 0 || jsonEnd < 0) throw new Error("no JSON in DeepSeek output");
 			const parsed = JSON.parse(raw.slice(jsonStart, jsonEnd + 1));
 			return { title: String(parsed.title ?? "").slice(0, 80), body: String(parsed.body ?? "").slice(0, 2000) };
 		} catch (error) {
