@@ -6931,7 +6931,7 @@ window.__ModuleLoader__.load({
 					renderSlot("conversation.hero.agentPreset", {})
 				]
 			});
-			const inert = sessionId === void 0 || hero && chipTitle === void 0;
+			const inert = sessionId === void 0;
 			const inputBar = renderSlot("conversation.composer.bar", {
 				variant: hero ? "hero" : "composer",
 				...inert ? {
