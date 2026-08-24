@@ -9825,6 +9825,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				if (!response.result.ok) throw new Error(response.result.error.message);
 				return response.result.value;
 			}
+
+			/** 从远程分支创建（或切换已有）本地分支并更新工作区。 */
+			async gitCheckoutRemote(path, branch) {
+				const response = await this.api.workspace.gitCheckoutRemote({ path, branch });
+				if (!response.result.ok) throw new Error(response.result.error.message);
+				return response.result.value;
+			}
 			/** Upload file bytes into the workspace's .dsh-uploads directory and mount them as public files. */
 			async importFiles(workspaceId, files) {
 				const { result } = await this.api.workspace.importFiles({
@@ -10379,6 +10386,10 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 
 			async writeFile(path, content) {
 				return await this.manager.writeFile(path, content);
+			}
+
+			async gitCheckoutRemote(path, branch) {
+				return await this.manager.gitCheckoutRemote(path, branch);
 			}
 			/**
 			* Create one child directory through the Host's `browse` capability.

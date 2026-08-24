@@ -3590,6 +3590,23 @@ function createApiProxy(ctx, defaults) {
 					return err(request, { code: "internal", message: `git stash pop failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
 				}
 			},
+			async gitCheckoutRemote(request) {
+				try {
+					const canonical = resolve(request.payload.path);
+					if (!isInsideWorkspaceRoots(ctx, canonical)) return err(request, { code: "internal", message: `git path is outside every workspace root: ${canonical}`, details: {} });
+					const remoteBranch = typeof request.payload.branch === "string" ? request.payload.branch.trim() : "";
+					if (!remoteBranch || !/^[A-Za-z0-9._/-]+$/.test(remoteBranch) || remoteBranch.startsWith("-")) return err(request, { code: "internal", message: "invalid branch name", details: {} });
+					const slash = remoteBranch.indexOf("/");
+					const localName = slash > 0 ? remoteBranch.slice(slash + 1) : remoteBranch;
+					let exists = false;
+					try { exists = (await runGit(canonical, ["rev-parse", "--verify", "--quiet", "refs/heads/" + localName], 15000)).trim() !== ""; } catch { exists = false; }
+					if (exists) await runGit(canonical, ["checkout", localName]);
+					else await runGit(canonical, ["checkout", "-b", localName, "--track", remoteBranch]);
+					return ok(request, { branch: await gitBranch(canonical) });
+				} catch (error) {
+					return err(request, { code: "internal", message: `git checkout remote failed: ${error instanceof Error ? error.message : String(error)}`, details: {} });
+				}
+			},
 			async writeFile(request) {
 				try {
 					const canonical = resolve(request.payload.path);
@@ -5033,6 +5050,10 @@ const workspaceGitStashPopValueSchema = z$1.object({ ok: z$1.boolean() });
 const workspaceWriteFileRequestSchema = z$1.object({ path: z$1.string(), content: z$1.string() });
 /** workspace.writeFile response value. */
 const workspaceWriteFileValueSchema = z$1.object({ ok: z$1.boolean() });
+/** workspace.gitCheckoutRemote request payload. */
+const workspaceGitCheckoutRemoteRequestSchema = z$1.object({ path: z$1.string(), branch: z$1.string() });
+/** workspace.gitCheckoutRemote response value. */
+const workspaceGitCheckoutRemoteValueSchema = z$1.object({ branch: z$1.string() });
 /** 校验绝对路径是否落在任一工作区根目录内（Windows 大小写不敏感）。 */
 function isInsideWorkspaceRoots(ctx, canonical) {
 	return ctx.workspaceRegistry.list().some((workspace) => workspace.paths.some((root) => {
@@ -5776,6 +5797,10 @@ const UNARY_ROUTES = {
 	"workspace.writeFile": {
 		schema: workspaceWriteFileRequestSchema,
 		invoke: (api, r) => api.workspace.writeFile(r)
+	},
+	"workspace.gitCheckoutRemote": {
+		schema: workspaceGitCheckoutRemoteRequestSchema,
+		invoke: (api, r) => api.workspace.gitCheckoutRemote(r)
 	},
 	"workspace.importFiles": {
 		schema: workspaceImportFilesRequestSchema,
