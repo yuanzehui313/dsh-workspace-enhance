@@ -767,8 +767,9 @@ function isENOENT(error) {
 /** 在 worker 线程逐帧 zstd 解压，避免大会话日志解码阻塞宿主事件循环；失败回退主线程同步解码。 */
 async function decodeZstdFramesOffThread(buffer, frames) {
 	const workerCode = `
-		const { parentPort, workerData } = require("node:worker_threads");
-		const { zstdDecompressSync } = require("node:zlib");
+		const load = (name) => typeof require === "function" ? require(name) : process.getBuiltinModule(name);
+		const { parentPort, workerData } = load("node:worker_threads");
+		const { zstdDecompressSync } = load("node:zlib");
 		const { buffer, frames } = workerData;
 		const out = [];
 		for (const { start, end } of frames) {
@@ -797,7 +798,7 @@ async function decodeZstdFramesOffThread(buffer, frames) {
 		});
 	}).catch(() => {
 		const decoder = createZstdFrameDecoder();
-		return [...decoder.decode(buffer, frames)];
+		return Array.from(decoder.decode(buffer, frames), (plaintext) => Buffer.from(plaintext));
 	});
 }
 
@@ -1066,8 +1067,6 @@ var JsonlSessionPersistence = class extends SessionPersistence {
 			/* v8 ignore next -- decoder failure plus concurrent abort is timing-dependent */
 			if (signal?.aborted) signal.throwIfAborted();
 			throw error;
-		} finally {
-			decoder.close();
 		}
 	}
 	/** Durably append a batch, lazily materializing the file when not yet present. */
