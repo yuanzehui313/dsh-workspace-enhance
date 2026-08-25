@@ -2985,7 +2985,10 @@ gitPushPreviewState !== null && gitPushPreviewState.path === root.path && (0, re
 			}, [open, load]);
 			const entries = listing === null ? [] : listing.entries;
 			const crumbs = listing === null ? [] : listing.crumbs;
-			const upPath = crumbs.length > 0 ? crumbs[crumbs.length - 1].path : null;
+			// crumbs are inclusive of the current level (root -> ... -> current), so the
+			// parent is the second-to-last crumb; a single crumb (drive level / filesystem
+			// root) has no parent and disables the up button.
+			const upPath = crumbs.length > 1 ? crumbs[crumbs.length - 2].path : null;
 			const toggle = (entry) => {
 				setChecked((previous) => previous.some((candidate) => candidate.path === entry.path) ? previous.filter((candidate) => candidate.path !== entry.path) : [...previous, { path: entry.path, kind: entry.kind === "file" ? "file" : "directory", name: entry.name }]);
 			};
