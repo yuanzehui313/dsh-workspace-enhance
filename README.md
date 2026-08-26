@@ -75,31 +75,43 @@ Commits 提交信息 → 提交 → 推送，结果回显在菜单中）。每�
 
 ## 安装
 
-前置：已安装 DeepSeek Harness（`@deepseek-ai/dsh@0.1.0-rc.6`）。
+前置：已安装 DeepSeek Harness（`@deepseek-ai/dsh@0.1.0-rc.6`，Windows）。
 
 ```powershell
-# 1. 安装插件包到 DSH profile（插件清单中可见 dsh-workspace-enhance）
+# 一键安装：npm 的 postinstall 会自动应用 overlay 补丁集
+# （自动探测全部 DSH bundle 安装位置：profile / 全局 / npx 缓存 / DSH Desktop / dsh-pinned）
 npm install --prefix "$env:USERPROFILE\.dsh\profiles" dsh-workspace-enhance
 
-# 2. 应用 overlay 补丁集（自动备份）
-powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.dsh\profiles\node_modules\dsh-workspace-enhance\scripts\install.ps1"
+# 重启 DSH 服务，浏览器 Ctrl+Shift+R 强刷
+```
 
-# 3. 重启 DSH 服务，浏览器 Ctrl+Shift+R 强刷
+> **装完即生效，无需再跑 install.ps1。** 插件宿主侧每次加载时也会**自动检查并补打**
+> overlay（幂等：已补打的文件不动；带版本守卫与自动备份），官方包刷新 / DSH 升级导致
+> 补丁丢失时会自动恢复；首次加载后若功能未生效，重启 DSH 一次即可。
+
+手工补打 / 预览（可选）：
+
+```powershell
+node "<安装路径>\scripts\apply-overlay.mjs" --dry-run   # 只预览会改哪些文件
+node "<安装路径>\scripts\apply-overlay.mjs"             # 实际补打
 ```
 
 校验与回滚：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File "...\scripts\verify.ps1"    # 检查补丁是否生效
-powershell -ExecutionPolicy Bypass -File "...\scripts\uninstall.ps1" # 从最近一次备份回滚
+powershell -ExecutionPolicy Bypass -File "...\scripts\uninstall.ps1" # 从最近一次备份回滚（多安装位置）
 ```
 
 ## 补丁持久性
 
 - overlay 安装时采用「删除后复制」方式落盘，**与官方包的硬链接断开**——DSH 宿主用
   `npx -y @deepseek-ai/dsh web` 重启服务时重新拉取官方包，不会连带覆盖已打补丁的文件。
-- Web 界面的插件解析以 **profile 的 `node_modules\@deepseek-ai`** 为准（补丁落在这里）。
-- 升级 DSH 版本后需重新核对 overlay（`verify.ps1` 会报告 REVERTED）。
+- **版本守卫**：overlay 只匹配 `@deepseek-ai/dsh@0.1.0-rc.6` 的 bundle；检测到其他版本时
+  会跳过并告警（直接覆盖新版 bundle 会破坏运行）。升级 DSH 后需同步更新 overlay 补丁
+  （`verify.ps1` 会报告 REVERTED / apply-overlay 会报告 SKIP）。
+- 可选持久化：把 `scripts\guard.ps1` 挂成计划任务，可在 DSH / 桌面端重启与包刷新后
+  静默重新补打。
 
 ## 跨会话记忆（OpenViking + 文件交接）
 

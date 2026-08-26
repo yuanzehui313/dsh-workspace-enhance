@@ -30,12 +30,16 @@
     "lib/index.js",
     "lib/client.js",
     "overlay/**/*",
+    "scripts/apply-overlay.mjs",
     "scripts/*.ps1",
     "handover/**/*",
     "README.md",
     "README.en.md",
     "LICENSE"
   ],
+  "scripts": {
+    "postinstall": "node scripts/apply-overlay.mjs"
+  },
   "license": "MIT",
   "keywords": [
     "deepseek",
