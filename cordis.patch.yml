@@ -1,0 +1,15 @@
+# dsh-workspace-enhance bundle layer.
+# The functional changes of this package are a file-level overlay patch-set
+# (scripts/apply-overlay.mjs — applied by this package's own apply() startup
+# hook and by postinstall) PLUS an additive loader entry: the node half
+# (exports ".") runs in the host process and registers the overlay auto-apply,
+# the workspaceEnhance capability marker, and the /cost-meter/daily route; the
+# browser half (declared by `dsh.client`, served from lib/client.js) mounts
+# the daily cost meter into the shell.overlay seat.
+#
+# This insert row is what makes the package actually load when a profile lists
+# it in dsh.profile.bundles — an empty patch list satisfies the manifest
+# contract but adds no loader entry, so nothing would run.
+- insert:
+    - id: workspace-enhance
+      name: 'dsh-workspace-enhance'

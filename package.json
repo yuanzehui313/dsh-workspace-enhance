@@ -24,11 +24,15 @@
     "client": {
       "inject": [],
       "platform": "web"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
     }
   },
   "files": [
     "lib/index.js",
     "lib/client.js",
+    "lib/cost-meter.mjs",
     "overlay/**/*",
     "scripts/apply-overlay.mjs",
     "scripts/*.ps1",
