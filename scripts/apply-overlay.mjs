@@ -26,7 +26,7 @@
  */
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -199,26 +199,35 @@ export function applyOverlay({ dryRun = false, quiet = false, trees } = {}) {
 }
 
 // ---- CLI ----
-const args = process.argv.slice(2);
-const treeArgs = [];
-let dryRun = false;
-let quiet = false;
-for (let i = 0; i < args.length; i += 1) {
-  const arg = args[i];
-  if (arg === "--dry-run") dryRun = true;
-  else if (arg === "--quiet") quiet = true;
-  else if (arg === "--tree") {
-    i += 1;
-    treeArgs.push(args[i]);
+// 仅当本文件是进程主模块时才执行命令行解析。作为模块被 lib/index.js
+// import 时（applyOverlay 的正规用法）跳过：宿主进程的 argv（如
+// `dsh web` 的 "web"）不是本脚本的参数，解析它会误杀宿主。
+const invokedAsCliMain = process.argv[1] !== void 0 && process.argv[1] !== null
+  && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedAsCliMain) {
+
+  const args = process.argv.slice(2);
+  const treeArgs = [];
+  let dryRun = false;
+  let quiet = false;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--dry-run") dryRun = true;
+    else if (arg === "--quiet") quiet = true;
+    else if (arg === "--tree") {
+      i += 1;
+      treeArgs.push(args[i]);
+    }
+    else {
+      console.error(`[apply-overlay] unknown argument: ${arg}`);
+      process.exit(2);
+    }
   }
-  else {
-    console.error(`[apply-overlay] unknown argument: ${arg}`);
-    process.exit(2);
+  try {
+    applyOverlay({ dryRun, quiet, trees: treeArgs.length > 0 ? treeArgs : undefined });
+  } catch (err) {
+    console.error(`[apply-overlay] failed: ${err.message}`);
+    process.exit(1);
   }
-}
-try {
-  applyOverlay({ dryRun, quiet, trees: treeArgs.length > 0 ? treeArgs : undefined });
-} catch (err) {
-  console.error(`[apply-overlay] failed: ${err.message}`);
-  process.exit(1);
+
 }
